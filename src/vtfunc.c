@@ -276,6 +276,90 @@ void csi_cls_screen_ED_J(const wchar_t *params,  HDC *memdc)
       }
     
 }
+/*
+  ESC [ <n> m	SGR	Establecer representaciones de gráficos	Se establece el formato de la pantalla y el texto tal como se especifica en <n>.
+
+
+ */
+
+
+void sgr(const wchar_t * params, HDC *memdc )
+{
+  #define MAX_PARAMS 50
+  wchar_t * token = NULL;
+  wchar_t * ptr = NULL;
+  wchar_t * bp[MAX_PARAMS]; // buffer de parametros
+  for(int x=0; x<MAX_PARAMS; x++) bp[x]=NULL;
+  token =wcstok((wchar_t*)params, L";",&ptr);
+  int j=0;
+  while((token!=NULL)&&(j < MAX_PARAMS))
+    {
+      bp[j]=wcsdup(token);
+      if(!bp[j])
+	{
+	  for(int i=0; i<j; i++)
+	    {
+	      free(bp[i]);
+	      bp[i]=NULL;
+	      return;
+	    }
+	}
+      j++;
+      token= wcstok(NULL, L";",&ptr);
+    }
+  int countParam=0;
+  for(int x=0; x<MAX_PARAMS; x++)
+    {
+      if(bp[x]!=NULL)
+	{
+	  countParam++;      
+	}
+      else
+	{
+	  break;
+	}
+	
+    }
+  if(countParam == 1)
+    {
+      TextAtri.fExtras = 0;
+      free(bp[0]);
+      bp[0]=NULL;
+      return;
+     
+    }
+  int x=0;
+  do
+    {
+      if(wcsncmp(bp[x],L"38",2) == 0)
+	{
+	  /// color de primer plano
+	  unsigned char r = (unsigned char)wcstol(bp[1], NULL, 10);
+	  unsigned char g = (unsigned char)wcstol(bp[2], NULL, 10);
+	  unsigned char b = (unsigned char)wcstol(bp[3], NULL, 10);
+	  TextAtri.fForeground = RGB(r,g,b);
+	}
+      else
+	{
+	  if(wcsncmp(bp[x],L"48",2) == 0)
+	    {
+	      // color de fondo
+	      unsigned char r = (unsigned char)wcstol(bp[1], NULL, 10);
+	      unsigned char g = (unsigned char)wcstol(bp[2], NULL, 10);
+	      unsigned char b = (unsigned char)wcstol(bp[3], NULL, 10);
+	      TextAtri.fBackground = RGB(r,g,b);
+	    }
+	}
+      x+=5;
+    }while(bp[x]!=NULL);
+  for(int y=0; y < countParam; y++)
+    {
+      free(bp[y]);
+      bp[y]=NULL;
+    }
+   TextAtri.fExtras = MODIFIED;
+}
+
 
 #define ID_TIMER_BLINK_CURSOR 1
 
