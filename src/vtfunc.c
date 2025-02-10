@@ -234,6 +234,26 @@ void csi_cls_screen_EL_K(const wchar_t *params,  HDC *memdc)
     myfree(line);
 }
 
+//ESC [ <n> @
+
+void csi_insert_char_ICH(const wchar_t *params,  HDC *memdc)
+{
+  int xi = cursor.x;
+  int xf = (int)wcstol(params, NULL, 10);
+  int dx = (xf - xi);
+ 
+  wchar_t *line = (wchar_t *)mymalloc(sizeof(wchar_t) * dx+1,__func__,__FILE__);
+    if (!line) {
+        wprintf(L"Error: no se pudo asignar memoria.\n");
+        return;
+    }
+    line[dx] = L'\0';
+    wmemset(line, L' ', dx);
+    draw_font(memdc, (const wchar_t *)line, cursor.x, cursor.y);
+    // Liberar memoria
+    myfree(line);
+}
+
 void csi_cls_screen_ED_J(const wchar_t *params,  HDC *memdc)
 {
   /// BORRA EN PANTALLA
@@ -281,7 +301,67 @@ void csi_cls_screen_ED_J(const wchar_t *params,  HDC *memdc)
 
 
  */
+#define BOLD_BRIGHT 1
+#define WITHOUTBOLD_BRIGHT 22
+#define UNDERLINE 4
+#define RGB_FRONTPLANE 38
+#define RGB_BACKPLANE 48
 
+void aplyTextAtribute(wchar_t **param,int maxParam)
+{
+  if(param == NULL)return;
+  int intParam[50];
+  wchar_t *endptr=NULL;
+  for(int x=0; x<maxParam; x++)
+    {
+      if(param[x]!=NULL)intParam[x]= wcstol(param[x], &endptr,10);
+      else break;
+    }
+  switch(intParam[0])
+    {
+      
+    case BOLD_BRIGHT:
+      {
+	// negrita y brillante
+	TextAtri.fWeight=FW_NORMAL;
+	TextAtri.fMode=TRANSPARENT;
+      }break;
+    case WITHOUTBOLD_BRIGHT:
+      {
+	
+	TextAtri.fMode=TRANSPARENT;
+      }break;
+    case UNDERLINE:
+      {
+	TextAtri.fUnderline=TRUE;
+	TextAtri.fMode=TRANSPARENT;
+	
+      }break;
+    case RGB_FRONTPLANE:
+      {
+	unsigned char r = intParam[2];
+	unsigned char g = intParam[3];
+	unsigned char b = intParam[4];
+	TextAtri.fForeground = RGB(r,g,b);
+	TextAtri.fMode=TRANSPARENT;
+	
+      }break;
+    case RGB_BACKPLANE:
+      {
+	unsigned char r = intParam[2];
+	unsigned char g = intParam[3];
+	unsigned char b = intParam[4];
+	TextAtri.fBackground = RGB(r,g,b);
+	TextAtri.fMode=OPAQUE;
+      }break;
+    default:
+      {
+	TextAtri.fForeground = RGB(188,255,0);
+	TextAtri.fBackground = 0;
+	TextAtri.fMode=TRANSPARENT;
+      }break;
+    }
+}
 
 void sgr(const wchar_t * params, HDC *memdc )
 {
@@ -307,57 +387,9 @@ void sgr(const wchar_t * params, HDC *memdc )
       j++;
       token= wcstok(NULL, L";",&ptr);
     }
-  int countParam=0;
-  for(int x=0; x<MAX_PARAMS; x++)
-    {
-      if(bp[x]!=NULL)
-	{
-	  countParam++;      
-	}
-      else
-	{
-	  break;
-	}
-	
-    }
-  if(countParam == 1)
-    {
-      TextAtri.fExtras = 0;
-      free(bp[0]);
-      bp[0]=NULL;
-      return;
-     
-    }
-  int x=0;
-  do
-    {
-      if(wcsncmp(bp[x],L"38",2) == 0)
-	{
-	  /// color de primer plano
-	  unsigned char r = (unsigned char)wcstol(bp[1], NULL, 10);
-	  unsigned char g = (unsigned char)wcstol(bp[2], NULL, 10);
-	  unsigned char b = (unsigned char)wcstol(bp[3], NULL, 10);
-	  TextAtri.fForeground = RGB(r,g,b);
-	}
-      else
-	{
-	  if(wcsncmp(bp[x],L"48",2) == 0)
-	    {
-	      // color de fondo
-	      unsigned char r = (unsigned char)wcstol(bp[1], NULL, 10);
-	      unsigned char g = (unsigned char)wcstol(bp[2], NULL, 10);
-	      unsigned char b = (unsigned char)wcstol(bp[3], NULL, 10);
-	      TextAtri.fBackground = RGB(r,g,b);
-	    }
-	}
-      x+=5;
-    }while(bp[x]!=NULL);
-  for(int y=0; y < countParam; y++)
-    {
-      free(bp[y]);
-      bp[y]=NULL;
-    }
-   TextAtri.fExtras = MODIFIED;
+  aplyTextAtribute(bp,MAX_PARAMS);
+  int y=0;
+  while(bp[y]!=NULL){free(bp[y]);bp[y]=NULL;y++;}
 }
 
 
