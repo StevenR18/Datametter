@@ -28,7 +28,10 @@ typedef struct
 {
   unsigned int fBackground;
   unsigned int fForeground;
-  unsigned char fExtras;
+  unsigned int fWeight;
+  unsigned int fItalic;
+  unsigned int fUnderline;
+  unsigned int fMode;
 }TextAtributes;
 extern TextAtributes TextAtri;
 
