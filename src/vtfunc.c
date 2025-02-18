@@ -163,7 +163,7 @@ void csi_cursor_u(const wchar_t *params, HDC *memdc)
   if (*params == L's') cursor = saveCursor;  // Cambié 's' por L's' para usar wchar_t
 }
 
-/* Secuencias de escape simples */
+//Secuencias de escape simples 
 void process_simple_escape_sequence(const wchar_t *params, HDC *memdc)
 {
   wchar_t es = *params;  // Cambié char por wchar_t
