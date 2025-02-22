@@ -1,29 +1,26 @@
 #include <windows.h>
 #include <stdio.h>
 #include "..\..\Vt\includes\timer.h"
-double inic_clock(Clok * clok)
+void inic_clock(Clock * clock)
 {
-  LARGE_INTEGER *hz = &clok->frequency;
-  LARGE_INTEGER *startT = &clok->startTime;
+  LARGE_INTEGER *hz = &clock->frequency;
+  LARGE_INTEGER *startT = &clock->startTime;
   if( hz->QuadPart == 0)
     {
-    QueryPerformanceFrequency(hz); // obtines la frecuecia del contador
+    QueryPerformanceFrequency(hz); // numero de cuentas por segundo
     }
-  
-    QueryPerformanceCounter(startT); 
+  QueryPerformanceCounter(startT); // por que cuenta va
 
-    double deltaT=(double)(startT->QuadPart)/(double)(hz->QuadPart); // devuelve el tiempo en segundo
-    return deltaT;
 }
 
-
-double stop_clock(Clok *clok)
+double stop_clock(Clock *clock)
 {
-  QueryPerformanceCounter(&clok->endTime); // la frecuencias del contador constante
-  LONGLONG  endT=clok->endTime.QuadPart;
-  LONGLONG  startT=clok->startTime.QuadPart;
-  LONGLONG  hz=clok->frequency.QuadPart;
-  double deltaT= (double)(endT - startT)/(double)(hz); // devuelve el tiempo en segundos
+  QueryPerformanceCounter(&clock->endTime); // cuenta final
+  LONGLONG elapsedTicks = clock->endTime.QuadPart - clock->startTime.QuadPart;
+  double deltaT= (double)elapsedTicks /(double)clock->frequency.QuadPart;
   return deltaT;
 }
+
+
+
 

@@ -13,6 +13,8 @@ typedef struct
   Nodo *buffercomand;
   int  width;
   int  height;
+  int  widthBuffer;
+  int  heightBuffer;
   int pixelPerChar;
   Row *row; // array del buffe principal
   int capRow;

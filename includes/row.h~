@@ -7,16 +7,11 @@ typedef struct
   int len;
   int rowType;
 }Row;
-// alias para  un puntero a Row
-typedef Row* RowPtr;
-// alias pra un caracter dentro de una row
-typedef wchar_t RowChar;
-
 
 void appendRow(Row **row,const wchar_t * s, int len, int *capr);
-void deleteRow(Row **row, int indexRow, int *capr);
+void deleteRow(Row ** row, int indexRow, int *capr);
 void freeRow(Row ** row, int *capr, int *ofset1, int *ofset2);
-int isYiRowisEmpty(Row **row ,int indexRow, int *capr);
+int isYiRowisEmpty(Row **row ,int indexRow);
 int findLastRowmain(Row **row, int cursor_y/*sumar el ofset_y*/);
 void appendCharToRow(Row **row,const wchar_t *c, int yIndex, int len);
 void reservMemoryRow(Row **row,int yIndex,int len);

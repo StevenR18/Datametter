@@ -41,5 +41,7 @@ Nodo ** getRootInput();
 void appendBuffer(const wchar_t *s, int len);
 void freeBuffer();
 void printBuffer();
+void write(HDC *memdc, int ofsetX);
+
 
 #endif
