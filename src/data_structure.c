@@ -1,79 +1,7 @@
-#include "..\..\Vt\includes\memory_traker.h"
-#include "..\..\Vt\includes\data_structure.h"
-Buffer buffer={0,NULL,NULL};
-Node *createNode(const wchar_t *s2, int len)
-{
-  #if 1
-  Node * nodo=(Node *)mymalloc(sizeof(Node),__func__, __FILE__);
-  #else
-  Node * nodo=(Node *)malloc(sizeof(Node));
-  #endif
-  #if 1
-  nodo->s = (wchar_t *)mymalloc(sizeof(wchar_t)*(len+1),__func__, __FILE__);
-  #else
-  nodo->s = (wchar_t *)malloc(sizeof(wchar_t)*(len+1));
-  #endif
-  if(nodo->s == NULL) return NULL;
-  wcsncpy(nodo->s,s2,len);
-  nodo->s[len]=L'\0';
-  nodo->next=NULL;
-  return nodo;
-}
 
-void freeBuffer()
-{
-  Node *current = head;
- 
-  while (current)
-    {
-      Node *next =(Node *) current->next; // Guarda el siguiente nodo antes de liberar el actual
-      #if 1
-      myfree(current->s);          // Libera la cadena asociada al nod
-      myfree(current);             // Libera el nodo
-      #else
-      free(current->s);          // Libera la cadena asociada al nodo
-      free(current);             // Libera el nodo
-      #endif
-      current = next;            // Pasa al siguiente nodo
-    }
-    // Reinicia las variables del buffer
-    head = NULL;
-    tail = NULL;
-    count = 0;
-}
+#include "..\..\Vt\includes\static_list.h"
+#include "..\..\Vt\includes\main_datametter.h"
 
-
-void appendNode(const wchar_t *s, int len)
-{
-  Node * newNode= createNode(s,len);
-  if(head == NULL)
-    {
-      // entra aqui si la lista esta vacia
-      head =  tail = newNode;
-    }
-  else
-    {
-      // entra aqui si hay  por lo menos un nodo
-      tail->next =(struct Node *) newNode;
-      tail= newNode;
-    }
-  count ++;
-}
-
-void printBuffer()
-{
-  Node * current= head;
-  while(current)
-    {
-      wprintf(L"Nodo [%p]\n"
-	     "Candena [%s]\n"
-	     "Next [%p]\n",current,current->s,current->next);
-
-      current =(Node *) current->next;
-      
-    }
-  wprintf(L"Count %d\n",count);
-}
 
 int lenEscape(const wchar_t *s)
 {
@@ -114,10 +42,15 @@ int lenEscape(const wchar_t *s)
    return len;
 }
 #define splitBuffer wchar_t **
+#define MAX_ROW 50
+#define MAX_CELL 1000
 
-splitBuffer spliteEcapeAndWord(const wchar_t *s, int *countOut)
+void spliteEcapeAndWord(const wchar_t *s,
+			       int *countOut,
+			       wchar_t splBuffer[MAX_ROW][MAX_CELL]
+			       )
 {
-  splitBuffer splBuffer = NULL;
+  //splitBuffer splBuffer = NULL;
   int splIndex = 0;
   int x = 0;
   int len = 0;
@@ -127,8 +60,10 @@ splitBuffer spliteEcapeAndWord(const wchar_t *s, int *countOut)
 	{ // Inicio de una secuencia de escape
 	  len = lenEscape(&s[x]);
 	  #if 1
+	  /*
 	  splBuffer = (splitBuffer)myrealloc(splBuffer, sizeof(wchar_t *) * (splIndex + 1),__func__, __FILE__);
 	  splBuffer[splIndex] = (wchar_t *)mymalloc(sizeof(wchar_t) * (len + 1),__func__, __FILE__);
+	  */
 	  #else
 	  splBuffer = (splitBuffer)realloc(splBuffer, sizeof(wchar_t *) * (splIndex + 1));
 	  splBuffer[splIndex] = (wchar_t *)malloc(sizeof(wchar_t) * (len + 1));
@@ -154,8 +89,10 @@ splitBuffer spliteEcapeAndWord(const wchar_t *s, int *countOut)
 	  if (len > 0)
 	    {
 	      #if 1
+	      /*
 	      splBuffer = (splitBuffer)myrealloc(splBuffer, sizeof(wchar_t *) * (splIndex + 1),__func__, __FILE__);
 	      splBuffer[splIndex] = (wchar_t *)mymalloc(sizeof(wchar_t) * (len + 1),__func__, __FILE__);
+	      */
 	      #else
 	      splBuffer = (splitBuffer)realloc(splBuffer, sizeof(wchar_t *) * (splIndex + 1));
 	      splBuffer[splIndex] = (wchar_t *)malloc(sizeof(wchar_t) * (len + 1));
@@ -169,8 +106,10 @@ splitBuffer spliteEcapeAndWord(const wchar_t *s, int *countOut)
 	      len=0;
 	      int start = x;
 	      #if 1
+	      /*
 	      splBuffer = (splitBuffer)myrealloc(splBuffer, sizeof(wchar_t *) * (splIndex + 1),__func__, __FILE__);
 	      splBuffer[splIndex] = (wchar_t *)mymalloc(sizeof(wchar_t) * (len + 1),__func__, __FILE__);
+	      */
 	      #else
 	      splBuffer = (splitBuffer)realloc(splBuffer, sizeof(wchar_t *) * (splIndex + 1));
 	      splBuffer[splIndex] = (wchar_t *)malloc(sizeof(wchar_t) * (len + 1));
@@ -185,24 +124,28 @@ splitBuffer spliteEcapeAndWord(const wchar_t *s, int *countOut)
     }
 
     *countOut = splIndex;
-    return splBuffer;
 }
 
 
 
 // el len que se le pasa a esta funcion no devería tomar en cuenta las secuencias de escape
-
+/*
 void freeSplBuffer(splitBuffer splBuffer, int c)
 {
   for(int x=0; x < c; x++)
     myfree(splBuffer[x]);
 }
+*/
+
 void appendBuffer(const wchar_t *s, int len)
 {
+  List * lisString= getListOfString();
   int c;
-      splitBuffer splBuffer= spliteEcapeAndWord(s, &c);
-  for(int x=0; x < c; x++) appendNode(splBuffer[x], wcslen(splBuffer[x]));
-
+  wchar_t spBuffer[MAX_ROW][MAX_CELL]={{L'\0'}};
+  spliteEcapeAndWord(s, &c,spBuffer);
+      for(int x=0; x < c; x++) appendNodoToList(lisString,spBuffer[x], wcslen(spBuffer[x]));
+    //appendNode(splBuffer[x], wcslen(splBuffer[x]));
+      /*
   #if 1
   freeSplBuffer(splBuffer, c);
   myfree(splBuffer);
@@ -211,6 +154,7 @@ void appendBuffer(const wchar_t *s, int len)
   free(splBuffer);
   #endif
   splBuffer=NULL;
+      */
 }
 
 

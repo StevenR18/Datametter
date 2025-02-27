@@ -1,5 +1,5 @@
-#ifndef ROW_H
-#define ROW_H
+#ifndef COPIA_ROW_H
+#define COPIA_ROW_H
 #include <wchar.h>
 typedef struct
 {
@@ -7,29 +7,37 @@ typedef struct
   int len;
   int rowType;
 }Row;
+// array de filas
+typedef Row ** ArrRow;
 // alias para  un puntero a Row
-typedef Row* RowPtr;
+typedef Row * RowPtr;
 // alias pra un caracter dentro de una row
-typedef wchar_t RowChar;
+
+#define ROW_STRING(array,indexr)((*array)[(indexr)].s)
+#define ROW_CHARAT(array,indexr,cellindex)((*array)[(indexr)].s[(cellindex)])
+#define ROW_LEN(array,indexr)((*array)[indexr].len)
+#define NULL_TERMINATE(array,indexr,len)((*array)[(indexr)].s[(len)]=L'\0')
+#define ROW_TYPE(array,indexr)((*array)[(indexr)].rowType)
 
 
-void appendRow(Row **row,const wchar_t * s, int len, int *capr);
-void deleteRow(Row **row, int indexRow, int *capr);
-void freeRow(Row ** row, int *capr, int *ofset1, int *ofset2);
-int isYiRowisEmpty(Row **row ,int indexRow, int *capr);
-int findLastRowmain(Row **row, int cursor_y/*sumar el ofset_y*/);
-void appendCharToRow(Row **row,const wchar_t *c, int yIndex, int len);
-void reservMemoryRow(Row **row,int yIndex,int len);
-void shiftAndInserChar(Row **row,
+
+void appendRow(ArrRow arr, wchar_t * c, int len, int *capr);
+void deleteRow(ArrRow arr,int indexRow, int *capr);
+void freeRow(ArrRow arr, int *capr, int *ofset1, int *ofset2);
+int RowisEmpty(ArrRow arr,int indexRow);
+int findLastRowmain(ArrRow arr, int indexRow/*sumar el ofset_y*/);
+void appendCharToRow(ArrRow arr, wchar_t * c, int indexRow, int len);
+void reservMemoryRow(ArrRow arr,int indexRow,int len);
+void shiftAndInserChar(ArrRow arr,
 		       wchar_t c ,
 		       int len,
-		       int yIndex,
+		       int indexRow,
 		       int dest,
 		       int origin,
 		       int moveCount);
 
-void appendCharsRow(Row **row,
-		    const wchar_t *c,
+void appendCharsRow(ArrRow arr,
+		    wchar_t * c,
 		    int cursorX,
 		    int cursorY,
 		    int ofsetY,
@@ -39,7 +47,7 @@ void appendCharsRow(Row **row,
 		    int width,
 		    int height);
 
-int isYiRowisMainAndLenisEqual7(Row **row,int y,int x,int ofset);
-int deleteOneChar(Row **row,int y,int x);
-void delCharOfRow(Row **row,int x, int y,int *capr);
+int RowisMainAndLenisEqualofset(ArrRow arr,int indexRow,int indexCell,int ofset);
+int deleteOneChar(ArrRow arr,int indexRow, int indexCell);
+void delCharOfRow(ArrRow arr,int indexCell, int indexRow,int *capr);
 #endif

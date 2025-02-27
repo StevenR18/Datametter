@@ -1,7 +1,7 @@
 #ifndef NEWWVT_T
 #define NEWWVT_T
 #include <wchar.h>
-#include "..\..\Vt\includes\liked_list.h"
+#include "..\..\Vt\includes\static_list.h"
 
 typedef struct
 {
@@ -9,7 +9,7 @@ typedef struct
   POINT cursor;
   wchar_t *glifo;
   char flag;
-  Nodo *inputBuffer;
+  List inputBuffer;
 }Termv; // Terminal virtual
 
 #define  saveCursor Emu.saveCursor
@@ -35,9 +35,8 @@ typedef struct
 }TextAtributes;
 extern TextAtributes TextAtri;
 
-Nodo * getInput();
+List * getInput();
 wchar_t * getGlifo();
-Nodo ** getRootInput();
 void appendBuffer(const wchar_t *s, int len);
 void freeBuffer();
 void printBuffer();

@@ -109,6 +109,11 @@ int downAt(Button b, int button)
 {
   return ((b.vk == button) && (b.isDown)); 
 }
+int releaseAt(Button b, int button)
+{
+  return ((b.vk == button) && (!b.isDown &&  b.changed)); 
+  
+}
 
 int ispressedOemButton(Button b)
 {

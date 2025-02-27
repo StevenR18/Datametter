@@ -219,7 +219,7 @@ void csi_cls_screen_EL_K(const wchar_t *params,  HDC *memdc)
             break;
       }
 
-    line = (wchar_t *)mymalloc(sizeof(wchar_t) * dx,__func__,__FILE__);
+    line = (wchar_t *)malloc(sizeof(wchar_t) * dx);
     if (!line) {
         wprintf(L"Error: no se pudo asignar memoria.\n");
         return;
@@ -231,7 +231,7 @@ void csi_cls_screen_EL_K(const wchar_t *params,  HDC *memdc)
     draw_font(memdc, (const wchar_t *)line, currentCursor.x, currentCursor.y);
 
     // Liberar memoria
-    myfree(line);
+    free(line);
 }
 
 //ESC [ <n> @
@@ -242,7 +242,7 @@ void csi_insert_char_ICH(const wchar_t *params,  HDC *memdc)
   int xf = (int)wcstol(params, NULL, 10);
   int dx = (xf - xi);
  
-  wchar_t *line = (wchar_t *)mymalloc(sizeof(wchar_t) * dx+1,__func__,__FILE__);
+  wchar_t *line = (wchar_t *)malloc(sizeof(wchar_t) * (dx+1));
     if (!line) {
         wprintf(L"Error: no se pudo asignar memoria.\n");
         return;
@@ -251,7 +251,7 @@ void csi_insert_char_ICH(const wchar_t *params,  HDC *memdc)
     wmemset(line, L' ', dx);
     draw_font(memdc, (const wchar_t *)line, cursor.x, cursor.y);
     // Liberar memoria
-    myfree(line);
+    free(line);
 }
 
 void csi_cls_screen_ED_J(const wchar_t *params,  HDC *memdc)

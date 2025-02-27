@@ -189,9 +189,10 @@ case CTRL_KEY('q'):
 			 WIDTH_TERMV,HEIGHT_TERMV);
 	  break; 
         case CTRL_KEY('n'):
+	{
 	  appendCharsRow(&row,L"^N",
 			 cursor_x,cursor_y,
 			 ofset_y,2,
 			 NULL,&caprow,
 			 WIDTH_TERMV,HEIGHT_TERMV);
-	  break;
+	}break;

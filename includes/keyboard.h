@@ -1,5 +1,6 @@
 #ifndef KEY_BOARD_H
 #define KEY_BOARD_H
+#include <windows.h>
 typedef struct
 {
   int vk;
@@ -7,6 +8,8 @@ typedef struct
   int ordinal; // indica en que orden llegan los eventos
   int isDown;  // indica si la telca fue presionada
   int changed; // indica si ubo un cambio
+  double dt;   // para hacer retardo
+  WORD repet;  // repeticion de teclas
 }Button;
 
 enum {
@@ -41,9 +44,9 @@ enum {
 
 typedef struct
 {
-  Button buttons[BUTTON_COUNT];
+  Button buttons[BUTTON_COUNT]; // array de botones
   Button orderButtons[BUTTON_COUNT]; // orden de botones segun llegada
-  char keystate[BUTTON_COUNT];
+  char keystate[BUTTON_COUNT]; //estados de las teclas
 }KeyboardEvent;
 
 int ispressedAnyKey();
@@ -69,6 +72,11 @@ int ispressedOemButton(Button b);
 		   keyEvent.buttons[b].changed)
 
 #define down(b)(keyEvent.buttons[b].isDown)
+
+#define DOWN_AND_RELEASED(x,b)(\
+			       downAt(keyEvent.orderButtons[(x)],(b))\
+			      &&\
+			      !released((b)))
 
 #define ispressedArrowKey (\
 			   keyEvent.buttons[BUTTON_LEFT]\

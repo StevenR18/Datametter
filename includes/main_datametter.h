@@ -2,15 +2,21 @@
 #define MAIN_DATAMETTER_H
 #include "..\..\Vt\includes\window64_platform.h"
 #include "..\..\Vt\includes\keyboard.h"
-#include "..\..\Vt\includes\liked_list.h"
+#include "..\..\Vt\includes\static_list.h"
 #include "..\..\Vt\includes\row.h"
 
-
+typedef enum
+  {
+    MOD_FREE_CURSOR,
+    MOD_TERM_CURSOR
+  }Mod;
 
 typedef struct
 {
   POINT vCursor;
-  Nodo *buffercomand;
+  Mod  cursorMod; // modo del  curor
+  List buffercomand;
+  List listOfStrings;
   int  width;
   int  height;
   int  widthBuffer;
@@ -24,7 +30,7 @@ typedef struct
 }View;                  
 
 extern View vEmu;
-
+List * getListOfString();
 void main_app(Win32ScreenBuffer *Buffer, KeyboardEvent * k);
 void inic_app(Win32WindowDimension Dim);
 void end_app();

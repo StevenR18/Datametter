@@ -1,0 +1,20 @@
+#inlclude <stdio.h>
+#define MAX_DATA 100
+
+typedef struc Nodo
+{
+  wchar_t data[MAX_DATA];
+}Nodo;
+
+
+
+
+
+
+
+
+
+int main()
+{
+  
+}
