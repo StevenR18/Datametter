@@ -1,15 +1,20 @@
 #ifndef KEY_BOARD_H
 #define KEY_BOARD_H
 #include <windows.h>
+#define MAX_ESCAPE 10
 typedef struct
 {
-  int vk;
+  int vk; // codigo de telca virtual
   int processed;
   int ordinal; // indica en que orden llegan los eventos
   int isDown;  // indica si la telca fue presionada
   int changed; // indica si ubo un cambio
-  double dt;   // para hacer retardo
-  WORD repet;  // repeticion de teclas
+  int previous;  // estado anterio del la tecla
+  int actual; // estado actual del teclado
+  wchar_t ecape[MAX_ESCAPE];// para guardar la secuencia de escape
+  wchar_t unicode; // caracter unicode de la tecla que se presiono
+  double pressedTime; // momento en que se presiona la tecla
+  double releaseTime; // momento en que se liberó la tecla
 }Button;
 
 enum {
@@ -46,6 +51,7 @@ typedef struct
 {
   Button buttons[BUTTON_COUNT]; // array de botones
   Button orderButtons[BUTTON_COUNT]; // orden de botones segun llegada
+  int countEvent; // cuenta el numero de eventos que ocurrio en el actual  fotograma
   char keystate[BUTTON_COUNT]; //estados de las teclas
 }KeyboardEvent;
 
@@ -56,36 +62,72 @@ int ispressedAlphaAt(Button b);
 int isdownAlphaAt(Button b);
 int ispressedArrowKeyAt(Button b);
 int isdownArrowKeyAt(Button b);
+int releasedArrowKey(Button b);
 int downAt(Button b, int button);
 int downAnyKey();
 int isdownCtrlAt(Button b);
+int dowPrintAble(Button b);
+int releasedPrintAble(Button b);
+int ispressedPrintable(Button b);
 int ispressedOemButton(Button b);
 
-#define pressed(b)(\
-		   keyEvent.buttons[b].isDown\
-		   &&\
-		   keyEvent.buttons[b].changed)
- 
-#define released(b)(\
-		   !keyEvent.buttons[b].isDown\
-		   &&\
-		   keyEvent.buttons[b].changed)
+/*
+  Nombre de la macro: haveInput()
+  macro para saber si hay entradas de teclado 
+ */
+#define HAVE_INPUT(b) (((k->buttons[b].changed) && \
+			(k->buttons[b].isDown))||\
+		       ((!(k->buttons[b].changed))&&\
+			(k->buttons[b].isDown))\
+		       )
 
-#define down(b)(keyEvent.buttons[b].isDown)
+#define ISPRESSPRINTABLE(z)(					\
+	     (							\
+	(ispressedPrintable(k->orderButtons[x])\
+	 ||							\
+	 (ispressedOemButton(k->orderButtons[x])))	\
+	||							\
+	((dowPrintAble(k->orderButtons[x]))		\
+	 &&							\
+	 (!releasedPrintAble(k->orderButtons[x]))		\
+	 )							\
+								))
 
-#define DOWN_AND_RELEASED(x,b)(\
-			       downAt(keyEvent.orderButtons[(x)],(b))\
-			      &&\
-			      !released((b)))
+/*
+  Nombre de la macro: haveCtrlButton 
+  Macro para saver si si presiono una tecla de control-
+  no importa si se presiono una sola ve o se mantubo presionada
+
+ */
+#define HAVE_CTRL_BUTTON(x)(\
+			   ispressedCtrlAt(k->orderButtons[(x)])	\
+			   ||						\
+			   isdownCtrlAt(k->orderButtons[((x))]))
+#define PRESSED(b) ( \
+    (k->buttons[(b)].isDown) && \
+    (k->buttons[(b)].changed) \
+)
+
+#define RELEASED(b) ( \
+    !(k->buttons[(b)].isDown) && \
+    (k->buttons[(b)].changed) \
+)
+
+#define DOWN(b) ( \
+    (k->buttons[(b)].isDown) && \
+    !(k->buttons[(b)].changed) \
+)
+
+
 
 #define ispressedArrowKey (\
-			   keyEvent.buttons[BUTTON_LEFT]\
+			   k->buttons[BUTTON_LEFT]\
 			   ||\
-			   keyEvent.buttons[BUTTON_RIGHT]\
+			   k->buttons[BUTTON_RIGHT]\
 			   ||\
-			   keyEvent.buttons[BUTTON_DOWN]\
+			   k->buttons[BUTTON_DOWN]\
 			   ||\
-			   keyEvent.buttons[BUTTON_UP])
+			   k->buttons[BUTTON_UP])
 
 
 				

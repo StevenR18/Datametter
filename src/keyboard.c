@@ -40,13 +40,20 @@ int isdownAnyKey()
 {
   int flag = 0;
     for (int i = 1; i < BUTTON_COUNT; i++) {
-        if (keyEvent.buttons[i].isDown) {
+      if (keyEvent.buttons[i].isDown &&
+	  (!(keyEvent.buttons[i].changed))) {
             flag = 1;
             break;
         }
     }
     return flag;
 }
+
+
+
+
+
+
 int ispressedCtrlAt(Button b)
 {
   return (((b.vk == BUTTON_UP)) &&( b.isDown) && (b.changed)||
@@ -57,15 +64,16 @@ int ispressedCtrlAt(Button b)
 	  //  ((b.vk == BUTTON_BACK)) &&( b.isDown) && (b.changed)||
 	  ((b.vk == BUTTON_CTRL)) &&( b.isDown) && (b.changed)); 
 }
+
 int isdownCtrlAt(Button b)
 {
-  return (((b.vk == BUTTON_UP)) &&( b.isDown)||
-	  ((b.vk == BUTTON_DOWN)) &&( b.isDown)||
-	  ((b.vk == BUTTON_RIGHT)) &&( b.isDown)||
-	  ((b.vk == BUTTON_LEFT)) &&( b.isDown)||
-	  ((b.vk == BUTTON_SHIFT)) &&( b.isDown)||
+  return (((b.vk == BUTTON_UP))   && (b.isDown && (!(b.changed)))||
+	  ((b.vk == BUTTON_DOWN)) && ((b.isDown)&&(!b.changed))||
+	  ((b.vk == BUTTON_RIGHT))&& ((b.isDown)&&(!b.changed))||
+	  ((b.vk == BUTTON_LEFT)) && ((b.isDown)&&(!b.changed))||
+	  ((b.vk == BUTTON_SHIFT))&& ((b.isDown)&&(!b.changed))||
 	  //((b.vk == BUTTON_BACK)) &&( b.isDown)||
-	  ((b.vk == BUTTON_CTRL)) &&( b.isDown));
+	  ((b.vk == BUTTON_CTRL)) && ((b.isDown)&&(!b.changed)));
   
 }
 
@@ -76,7 +84,7 @@ int ispressedAlphaAt(Button b)
 }
 int isdownAlphaAt(Button b)
 {
-  return ((isalpha(b.vk)) && (b.isDown));
+  return ((isalpha(b.vk)) && ((b.isDown)&&(!b.changed)));
   
 }
 
@@ -87,12 +95,18 @@ int ispressedArrowKeyAt(Button b)
    ((b.vk == BUTTON_RIGHT)&&(b.isDown && b.changed))||
    ((b.vk == BUTTON_LEFT)&&(b.isDown && b.changed)));
 }
+
 int isdownArrowKeyAt(Button b)
 {
-   return(((b.vk == BUTTON_UP)&&(b.isDown))||
-   ((b.vk == BUTTON_DOWN)&&(b.isDown))||
-   ((b.vk == BUTTON_RIGHT)&&(b.isDown))||
-   ((b.vk == BUTTON_LEFT)&&(b.isDown)));
+  return(((b.vk == BUTTON_UP)&& ((b.isDown)&&(!b.changed))||
+	  ((b.vk == BUTTON_DOWN)&&((b.isDown)&&(!b.changed)))||
+	  ((b.vk == BUTTON_RIGHT)&&((b.isDown)&&(!b.changed)))||
+	  ((b.vk == BUTTON_LEFT)&&((b.isDown)&&(!b.changed)))
+	  ));
+}
+int releasedArrowKey(Button b)
+{
+  return (!b.isDown && b.changed);
 }
 // verifica si se preciono una tecla que contiene un caracter imprimible
 ispressedPrintable(Button b)
@@ -100,6 +114,19 @@ ispressedPrintable(Button b)
   return ((isprint(b.vk)) && (b.isDown) && (b.changed));
   
 }
+// se mantubo presionado una tecla imprimible
+int dowPrintAble(Button b)
+{
+  return ((isprint(b.vk) && ((b.isDown) && (!b.changed))));
+  
+}
+/// se libero una tecla imprimible
+int releasedPrintAble(Button b)
+{
+   return ((isprint(b.vk) && ((!b.isDown) && (b.changed))));
+  
+}
+
 int ispressedAt(Button b, int button)
 {
   return ((b.vk == button) && (b.isDown && b.changed)); 
@@ -107,11 +134,11 @@ int ispressedAt(Button b, int button)
 }
 int downAt(Button b, int button)
 {
-  return ((b.vk == button) && (b.isDown)); 
+  return ((b.vk == button) && ((b.isDown)&&(!b.changed))); 
 }
 int releaseAt(Button b, int button)
 {
-  return ((b.vk == button) && (!b.isDown &&  b.changed)); 
+  return ((b.vk == button) && (!(b.isDown) &&  b.changed)); 
   
 }
 

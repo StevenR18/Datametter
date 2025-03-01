@@ -1,13 +1,12 @@
-void term_process_keypress()
+void term_process_keypress(KeyboardEvent *k)
 {
-  /// procesa la tecla pulsada
-  term_readkey(); // retorna la tecla  presionada
+  
   int capRowExceded=0;
-  List *bufferComand = &comand;
+  // List *bufferComand = &comand;
   wchar_t * resto=NULL; 
-  for(int x=0; x<bufferComand->count; x++)
+  for(int x=0; x<(BUTTON_COUNT-1); x++)
     {
-      wchar_t * str =(wchar_t *) bufferComand->head->data;
+      wchar_t * str =(wchar_t *)k->buttons[x].escape;
     
       switch(str[0])
 	{
@@ -154,7 +153,5 @@ void term_process_keypress()
 	     }
 	  break;
 	}
-      // if(resto != NULL){ free(resto); resto=NULL;}
-      //  bufferComand=(Nodo*) bufferComand->next;
     }
 }

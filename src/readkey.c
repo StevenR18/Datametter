@@ -7,7 +7,7 @@ void term_readkey()
   if(inputbuffer == NULL) return; // la lista esta vacia
   for(int y=0; y<inputbuffer->count; y++)
     {
-      wchar_t * str = (wchar_t *)inputbuffer->head->data;
+      wchar_t * str = (wchar_t *)inputbuffer->head[y].data;
       int len=sizeof(wchar_t)*2;
 	      wchar_t up[2];
 	      wchar_t down[2];
