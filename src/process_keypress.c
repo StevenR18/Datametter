@@ -1,12 +1,13 @@
-void term_process_keypress(KeyboardEvent *k)
+void term_process_keypress(List *inp)
 {
-  
   int capRowExceded=0;
-  // List *bufferComand = &comand;
   wchar_t * resto=NULL; 
   for(int x=0; x<(BUTTON_COUNT-1); x++)
     {
-      wchar_t * str =(wchar_t *)k->buttons[x].escape;
+      
+      wchar_t * str =(wchar_t *)inp->head[x].data;
+      int len= wcslen(str);
+      if(len == 0) return;
     
       switch(str[0])
 	{
@@ -34,11 +35,12 @@ void term_process_keypress(KeyboardEvent *k)
 		      {
 		        if(cursor_y != 0)
 			  {
+			    //TODO: corregir esta parte
 			    cursor_y--;
 			    ofset_x= (wBuffer- width);
-			    if((ROW_TYPE(arrRow,(cursor_y+ofset_y)) == ROW_MAIN))
-			    cursor_x= (width-1)-7;
-			    else cursor_x= (width-1);
+			    // if((ROW_TYPE(arrRow,(cursor_y+ofset_y)) == ROW_MAIN))
+			    cursor_x= (width-ofset_x);
+			    // else cursor_x= (width-1);
 			      
 			  }
 		      }
