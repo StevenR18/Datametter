@@ -4,7 +4,8 @@
 #include "..\..\Vt\includes\keyboard.h"
 #include "..\..\Vt\includes\static_list.h"
 #include "..\..\Vt\includes\row.h"
-
+#include <wchar.h>
+#define MAX 100
 typedef enum
   {
     MOD_FREE_CURSOR,
@@ -26,9 +27,9 @@ typedef struct
   int capRow;
   int ofsetY; // se utiliza para hacer escroll vertical
   int ofsetX; // se utilzia pra hacer escroll horizontal
-  int ofsetCapRow; // ofset para la capacidad del cursor 
-}View;                  
-
+  int ofsetCapRow; // ofset para la capacidad del cursor
+  wchar_t currentDirectory[MAX];
+}View;
 extern View vEmu;
 List * getListOfString();
 void main_app(Win32ScreenBuffer *Buffer, KeyboardEvent * k);

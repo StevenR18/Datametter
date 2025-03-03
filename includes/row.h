@@ -18,7 +18,7 @@ typedef Row * RowPtr;
 #define ROW_LEN(array,indexr)((*array)[indexr].len)
 #define NULL_TERMINATE(array,indexr,len)((*array)[(indexr)].s[(len)]=L'\0')
 #define ROW_TYPE(array,indexr)((*array)[(indexr)].rowType)
-
+#define ROW_MAIN 1 
 
 
 void appendRow(ArrRow arr, wchar_t * c, int len, int *capr);

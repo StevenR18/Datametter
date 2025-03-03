@@ -11,7 +11,7 @@ typedef struct
   int changed; // indica si ubo un cambio
   int previous;  // estado anterio del la tecla
   int actual; // estado actual del teclado
-  wchar_t ecape[MAX_ESCAPE];// para guardar la secuencia de escape
+  wchar_t escape[MAX_ESCAPE];// para guardar la secuencia de escape
   wchar_t unicode; // caracter unicode de la tecla que se presiono
   double pressedTime; // momento en que se presiona la tecla
   double releaseTime; // momento en que se liberó la tecla
