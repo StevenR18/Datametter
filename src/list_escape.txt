@@ -1,0 +1,28 @@
+implementar las sigueente de escape al emulador
+
+\x1b[A      # Mueve el cursor una línea hacia arriba
+\x1b[B      # Mueve el cursor una línea hacia abajo
+\x1b[C      # Mueve el cursor una posición a la derecha
+\x1b[D      # Mueve el cursor una posición a la izquierda
+
+\x1b[1;5C   # Ctrl + Flecha Derecha: Mueve el cursor una palabra a la derecha
+\x1b[1;5D   # Ctrl + Flecha Izquierda: Mueve el cursor una palabra a la izquierda
+\x1b[1;5A   # Ctrl + Flecha Arriba: Desplaza el viewport una línea hacia arriba
+\x1b[1;5B   # Ctrl + Flecha Abajo: Desplaza el viewport una línea hacia abajo
+
+\x1b[1;2C   # Shift + Flecha Derecha: Selección hacia la derecha
+\x1b[1;2D   # Shift + Flecha Izquierda: Selección hacia la izquierda
+\x1b[1;2A   # Shift + Flecha Arriba: Selección hacia arriba
+\x1b[1;2B   # Shift + Flecha Abajo: Selección hacia abajo
+
+\x1b[1;3C   # Alt + Flecha Derecha: Mueve el cursor más rápido hacia la derecha (en algunos sistemas)
+\x1b[1;3D   # Alt + Flecha Izquierda: Mueve el cursor más rápido hacia la izquierda
+\x1b[1;3A   # Alt + Flecha Arriba: Desplaza más rápido hacia arriba
+\x1b[1;3B   # Alt + Flecha Abajo: Desplaza más rápido hacia abajo
+
+\x1b[H      # Mueve el cursor al inicio de la línea (Home)
+\x1b[F      # Mueve el cursor al final de la línea (End)
+\x1b[5~     # Page Up: Desplaza una página hacia arriba
+\x1b[6~     # Page Down: Desplaza una página hacia abajo
+\x1b[2~     # Insert: Cambia al modo de inserción
+\x1b[3~     # Delete: Elimina el carácter bajo el cursor

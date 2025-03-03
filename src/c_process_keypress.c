@@ -1,54 +1,60 @@
-void term_process_keypress()
+void term_process_keypress(List *inp)
 {
-  /// procesa la tecla pulsada
-  term_readkey(); // retorna la tecla  presionada
   int capRowExceded=0;
-  Nodo *bufferComand = comand;
   wchar_t * resto=NULL; 
-  while(bufferComand!=NULL)
+  for(int x=0; x<(BUTTON_COUNT-1); x++)
     {
-      wchar_t * str =(wchar_t *) bufferComand->data;
-    
+      
+      wchar_t * str =(wchar_t *)inp->head[x].data;
+      int len= wcslen(str);
+      if(len == 0) return;    
       switch(str[0])
 	{
 	case L'\x1b':
 	  {
-	    if(str[1] == L'[')
+	    if((str[1] == L'[') && (str[2]==L'3'))
 	      {
-		int xof=0;
-		
-		if(ROW_TYPE(arrRow,(cursor_y+ofset_y)) == ROW_MAIN) xof=lenDirectory;
-		delCharOfRow(arrRow,(cursor_x+xof), (cursor_y+ofset_y),&caprow);
-		if((row[(cursor_y+ofset_y)].rowType == ROW_MAIN)&&
-		   cursor_x+xof > lenDirectory)
+		int ofx=0;
+		if((ROW_TYPE(arrRow,(cursor_y+ofset_y))== ROW_MAIN)&&
+		   (ROW_LEN(arrRow,(cursor_y+ofset_y))== lenDirectory))
+		  {	    
+		    return;
+		  }
+		if(ROW_TYPE(arrRow,(cursor_y+ofset_y))== ROW_MAIN) ofx=lenDirectory;
+		delCharOfRow(arrRow,(cursor_x+ofset_x+ofx),(cursor_y+ofset_y),&caprow);
+		cursor_x--;
+		if(cursor_x+ofset_x < 0)
 		  {
-		    cursor_x--;
+		    cursor_y--;
+		    ofset_x= (wBuffer- width);
+		    if(ROW_TYPE(arrRow,(cursor_y+ofset_y))== ROW_MAIN)
+		      cursor_x=(width-lenDirectory)-1;
+		    else
+		      cursor_x = (width-1);
 		  }
 		else
 		  {
-		    if((ROW_TYPE(arrRow,(cursor_y+ofset_y)) != ROW_MAIN)&&
-		       ((cursor_x+xof)!=0))
+		    if((cursor_x+ofset_x) < ofset_x)
 		      {
-			cursor_x--;
-		      }
-		    else
-		      {
-		        if(cursor_y != 0)
-			  {
-			    cursor_y--;
-			    ofset_x= (wBuffer- width);
-			    if((ROW_TYPE(arrRow,(cursor_y+ofset_y)) == ROW_MAIN))
-			    cursor_x= (width-1)-7;
-			    else cursor_x= (width-1);
-			      
-			  }
+			cursor_x=0;
+			ofset_x--;
 		      }
 		  }
+	      }
+
+	    /// ESTE IF CONTROLA EL CURSOR
+	    else if((str[1] == L'[') && (str[2]==L'A')||
+		    (str[1] == L'[') && (str[2]==L'B')||
+		    (str[1] == L'[') && (str[2]==L'C')||
+		    (str[1] == L'[') && (str[2]==L'D'))
+	      {
+		 term_move_cursor(str[2]);
 		
 	      }
 	  }break;
-	  #include"ctrlk.c"
-	case ARROW_UP(0x5E00):
+#include"ctrlk.c"
+	  
+	case L'A':
 	case ARROW_DOWN(0x5E00):
 	case ARROW_LEFT(0x5E00):
 	case ARROW_RIGHT(0x5E00):
@@ -154,7 +160,5 @@ void term_process_keypress()
 	     }
 	  break;
 	}
-      // if(resto != NULL){ free(resto); resto=NULL;}
-      bufferComand=(Nodo*) bufferComand->next;
     }
 }
