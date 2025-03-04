@@ -59,63 +59,109 @@ int isBlankSpace(int cursor_x,int cursor_y,ArrRow arr)
   
 }
 /*
-  funcion para abanzar entre palabras 
+  funciones para abanzar entre palabras  para abanzar entre palabras 
  */
 
-#define RIGHT 1
-#define LEFT  2
-void moveBetweenWordsLeft(POINT *Cursor,
-		      int ofset_y,
-		      int ofset_x,
-		      ArrRow arr)
+
+void moveBetweenWordsLeft(POINT *Cursor,int *ofset_y,int *ofset_x,int Width,
+			   int WidthBuffer,
+			   ArrRow arr)
 {
-
-
-  ///TODO: hay que hacer la funcion para mover el cursor a la isaquirda entre palabras
   
-
-
-  
-}
-
-void moveBetweenWordsRight(POINT *Cursor,
-		      int ofset_y,
-		      int ofset_x,
-		      ArrRow arr)
-{
   int lenD=0;
-  int rowIndex = Cursor->y+ofset_y;
+  int rowIndex = Cursor->y+*ofset_y;
   if(ROW_TYPE(arr,(rowIndex))== ROW_MAIN) lenD= lenDirectory;
   int cx=Cursor->x;
-  if(cx == ROW_LEN(arr,rowIndex)) return;
+  int cy=Cursor->y;
+  if((cx + *ofset_x + lenD) == lenD)return;
   /// crear un funcion que revise si estas en una letra o un espacio en blanco
-  int isBlank = isBlankSpace((cx),(rowIndex),arr);
-  if(isBlank)
+  wchar_t lastChar=ROW_CHARAT(arr,(cy+*ofset_y),(cx+*ofset_x+lenD));
+  wchar_t inicRow = ROW_CHARAT(arr,(cy + *ofset_y),(lenD-1));
+  while((lastChar != inicRow))
     {
-      while(isBlankSpace((cx+ofset_x+lenD),(rowIndex),arr))
+      if (iswspace(lastChar))
 	{
-	  /// abanzar el cursor hata encontra una letra
-	  if(ROW_CHARAT(arr,rowIndex,cx+ofset_x+lenD)== L'\0')break;
-	  cx++;
-	  
+	  while(iswspace(lastChar)&& lastChar != inicRow)
+	    {
+	      cx--;
+	      lastChar=ROW_CHARAT(arr,(cy + *ofset_y),(cx + *ofset_x + lenD));
+	    }
+	  break;
+	}
+      else if(!iswspace(lastChar))
+	{
+	  while(lastChar != L' '&& lastChar != inicRow)
+	    {
+	      cx--;
+	      lastChar=ROW_CHARAT(arr,(cy + *ofset_y),(cx + *ofset_x + lenD));
+	    }
 	}
     }
-  else
+   if(lastChar == inicRow)Cursor->x=0;
+   else Cursor->x =cx; // actualizamos la nueva posicion
+   /// verificamos si se hizo scorll horizontal
+   if((Cursor->x + *ofset_x + lenD) == 0)
+     {
+       Cursor->y--;
+       Cursor->x=WidthBuffer;
+       moveBetweenWordsLeft(Cursor,ofset_y,ofset_x,Width,WidthBuffer,arr);
+       return;
+     }
+   
+   /*
+   int hasScrolled =(((Width + *ofset_x) - (Cursor->x + *ofset_x + lenD)) < 0) ? 1:0;
+   if(hasScrolled) *ofset_x =((Cursor->x + *ofset_x + lenD)-(Width + *ofset_x));
+   */
+}
+
+void moveBetweenWordsRight(POINT *Cursor,int *ofset_y,int *ofset_x,int Width,
+			   int WidthBuffer,
+			   ArrRow arr)
+{
+  
+  int lenD=0;
+  int rowIndex = Cursor->y+*ofset_y;
+  if(ROW_TYPE(arr,(rowIndex))== ROW_MAIN) lenD= lenDirectory;
+  int cx=Cursor->x;
+  int cy=Cursor->y;
+  if((cx + *ofset_x + lenD) == ROW_LEN(arr,rowIndex))return;
+  /// crear un funcion que revise si estas en una letra o un espacio en blanco
+  wchar_t lastChar=ROW_CHARAT(arr,(cy+*ofset_y),(cx+*ofset_x+lenD));
+  
+  while((lastChar != L'\0'))
     {
-      // estas pocicionado en una letra
-      while(!isBlankSpace((cx+ofset_x+lenD),(rowIndex),arr))
+      if (iswspace(lastChar))
 	{
-	  if(ROW_CHARAT(arr,rowIndex,cx+ofset_x+lenD)== L'\0')break;
-	  cx++;
-	  
+	  while(iswspace(lastChar)&& lastChar != L'\0')
+	    {
+	      cx++;
+	      lastChar=ROW_CHARAT(arr,(cy + *ofset_y),(cx + *ofset_x + lenD));
+	    }
+	  break;
+	}
+      else if(!iswspace(lastChar))
+	{
+	  while(lastChar != L' '&& lastChar != '\0')
+	    {
+	      cx++;
+	      lastChar=ROW_CHARAT(arr,(cy + *ofset_y),(cx + *ofset_x + lenD));
+	    }
 	}
     }
-    if(ROW_CHARAT(arr,rowIndex,cx+ofset_x+lenD)== L'\0')
-      {
-	Cursor->x= (ROW_LEN(arr,rowIndex)- ofset_x-lenD);
-	return;
-      }
-  Cursor->x=(cx+1); // actualizamos la nueva posicion
+   if(lastChar == L'\0')Cursor->x=(ROW_LEN(arr,(cy + *ofset_y))-(*ofset_x+lenD));
+   else Cursor->x =cx; // actualizamos la nueva posicion
+   /// verificamos si se hizo scorll horizontal
+   if((Cursor->x + *ofset_x + lenD) == WidthBuffer)
+     {
+       Cursor->y++;
+       Cursor->x=0;
+       moveBetweenWordsRight(Cursor,ofset_y,ofset_x,Width,WidthBuffer,arr);
+       return;
+     }
+   /*
+   int hasScrolled =(((Width + *ofset_x) - (Cursor->x + *ofset_x + lenD)) < 0) ? 1:0;
+   if(hasScrolled) *ofset_x =((Cursor->x + *ofset_x + lenD)-(Width + *ofset_x));
+   */
 }
 
 int isEscapeCtrl(wchar_t *str, int len)
@@ -144,12 +190,24 @@ void processSequences(wchar_t * str, int len)
       switch(func)
 	{
 	case L'C':
-	  moveBetweenWordsRight(&vEmu.vCursor,vEmu.ofsetY,vEmu.ofsetX,arrRow);
+	  moveBetweenWordsRight(&vEmu.vCursor,
+				&vEmu.ofsetY,
+				&vEmu.ofsetX,
+				vEmu.width,
+				vEmu.widthBuffer,
+				arrRow
+				);
 	  break;
 	case L'D':
-	  //TODO:Falta implementar
-	  moveBetweenWordsLeft(&vEmu.vCursor,vEmu.ofsetY,vEmu.ofsetX,arrRow);
+	  moveBetweenWordsLeft(&vEmu.vCursor,
+				&vEmu.ofsetY,
+				&vEmu.ofsetX,
+				vEmu.width,
+				vEmu.widthBuffer,
+				arrRow
+				);
 	  break;
+	  // TODO: implementar esta deven hacer escoroll vertical arriba abajo
 	case L'A':break;
 	case L'B':break;
 	 
