@@ -2,18 +2,18 @@
 void cursor_up_inverse_newline(const wchar_t *params,HDC *memdc)
 {
     if (*params == L'M')  // Usamos L'M' para caracteres anchos
-        cursor.y -= 1;    // Mueve el cursor una línea hacia arriba
+        Emu.cursor.y -= 1;    // Mueve el cursor una línea hacia arriba
 }
 void save_cursor(const wchar_t *params, HDC *memdc)
 {
     if (*params == L'7')  // Usamos L'7' para caracteres anchos
-        saveCursor = cursor;
+        Emu.saveCursor = Emu.cursor;
 }
 
 void restore_cursor(const wchar_t *params, HDC *memdc)
 {
     if (*params == L'7')  // Usamos L'7' para caracteres anchos
-        cursor = saveCursor;
+        Emu.cursor = Emu.saveCursor;
 }
 
 // Funciones CSI
@@ -25,7 +25,7 @@ void csi_cursor_up(const wchar_t *params, HDC *memdc)
         n = (wcstol(params, NULL, 10) == 0) ? 1 : wcstol(params, NULL, 10);  // wcstol para convertir a entero
     else
         n = 1;  // Si no hay parámetros, se asume que se movió 1 línea
-    cursor.y -= n;
+    Emu.cursor.y -= n;
 }
 
 void csi_cursor_down(const wchar_t *params, HDC *memdc)
@@ -36,7 +36,7 @@ void csi_cursor_down(const wchar_t *params, HDC *memdc)
         n = (wcstol(params, NULL, 10) == 0) ? 1 : wcstol(params, NULL, 10);  // wcstol para convertir a entero
     else
         n = 1;  // Si no hay parámetros, se asume que se movió 1 línea
-    cursor.y += n;
+    Emu.cursor.y += n;
 }
 
 void csi_cursor_C(const wchar_t *params, HDC *memdc)
@@ -48,7 +48,7 @@ void csi_cursor_C(const wchar_t *params, HDC *memdc)
         n = (wcstol(params, NULL, 10) == 0) ? 1 : wcstol(params, NULL, 10);  // wcstol para convertir a entero
     else
         n = 1;  // Si no hay parámetros, se asume que se movió 1 columna
-    cursor.x += n;
+    Emu.cursor.x += n;
 }
 
 void csi_cursor_D(const wchar_t *params, HDC *memdc)
@@ -60,7 +60,7 @@ void csi_cursor_D(const wchar_t *params, HDC *memdc)
         n = (wcstol(params, NULL, 10) == 0) ? 1 : wcstol(params, NULL, 10);  // wcstol para convertir a entero
     else
         n = 1;  // Si no hay parámetros, se asume que se movió 1 columna
-    cursor.x -= n;
+    Emu.cursor.x -= n;
 }
 
 void csi_cursor_E(const wchar_t *params, HDC *memdc)
@@ -72,7 +72,7 @@ void csi_cursor_E(const wchar_t *params, HDC *memdc)
         n = (wcstol(params, NULL, 10) == 0) ? 1 : wcstol(params, NULL, 10);  // wcstol para convertir a entero
     else
         n = 1;  // Si no hay parámetros, se asume que se movió 1 fila
-    cursor.y += n;
+    Emu.cursor.y += n;
 }
 
 void csi_cursor_F(const wchar_t *params, HDC *memdc)
@@ -84,7 +84,7 @@ void csi_cursor_F(const wchar_t *params, HDC *memdc)
         n = (wcstol(params, NULL, 10) == 0) ? 1 : wcstol(params, NULL, 10);  // wcstol para convertir a entero
     else
         n = 1;  // Si no hay parámetros, se asume que se movió 1 fila
-    cursor.y -= n;
+    Emu.cursor.y -= n;
 }
 
 
@@ -101,7 +101,7 @@ void csi_cursor_G(const wchar_t *params, HDC *memdc)
      n = (wcstol(params, NULL, 10) == 0) ? 1 : wcstol(params, NULL, 10);  // wcstol para convertir a entero
   else
     n = (wcstol(params, NULL, 10) + 1);  // wcstol en lugar de atoi
-  cursor.x = n;
+  Emu.cursor.x = n;
 }
 
 void csi_cursor_d(const wchar_t *params, HDC *memdc)
@@ -112,7 +112,7 @@ void csi_cursor_d(const wchar_t *params, HDC *memdc)
      n = (wcstol(params, NULL, 10) == 0) ? 1 : wcstol(params, NULL, 10);  // wcstol para convertir a entero
   else
     n = (wcstol(params, NULL, 10) + 1);  // wcstol en lugar de atoi
-  cursor.y = n;
+  Emu.cursor.y = n;
 }
 
 void csi_cursor_H(const wchar_t *params, HDC *memdc)
@@ -137,13 +137,13 @@ void csi_cursor_H(const wchar_t *params, HDC *memdc)
       n = (valueParams[y] == 0) ? 0 : valueParams[y];
     else
       n = (valueParams[y]);
-    if (y == 0) cursor.y = n;
-    else cursor.x = n;
+    if (y == 0) Emu.cursor.y = n;
+    else Emu.cursor.x = n;
   }
   if(x == 0)
     {
-      cursor.x=0;
-      cursor.y=0;
+      Emu.cursor.x=0;
+      Emu.cursor.y=0;
     }
   
 }
@@ -155,12 +155,12 @@ void csi_cursor_f(const wchar_t *params, HDC *memdc)
 
 void csi_cursor_s(const wchar_t *params, HDC *memdc)
 {
-  if (*params == L's') saveCursor = cursor;  // Cambié 's' por L's' para usar wchar_t
+  if (*params == L's') Emu.saveCursor = Emu.cursor;  // Cambié 's' por L's' para usar wchar_t
 }
 
 void csi_cursor_u(const wchar_t *params, HDC *memdc)
 {
-  if (*params == L's') cursor = saveCursor;  // Cambié 's' por L's' para usar wchar_t
+  if (*params == L's') Emu.cursor = Emu.saveCursor;  // Cambié 's' por L's' para usar wchar_t
 }
 
 //Secuencias de escape simples 
@@ -171,11 +171,11 @@ void process_simple_escape_sequence(const wchar_t *params, HDC *memdc)
   {
     case L'\n':  // Cambié '\n' por L'\n' para usar wchar_t
     {
-      cursor.y += 1;
+      Emu.cursor.y += 1;
     } break;
     case L'\r':  // Cambié '\r' por L'\r' para usar wchar_t
     {
-      cursor.x = 0;
+      Emu.cursor.x = 0;
     } break;
     default:
       break;
@@ -198,7 +198,7 @@ void csi_cls_screen_EL_K(const wchar_t *params,  HDC *memdc)
       {
         n = (int)wcstol(token, NULL, 10);
       }
-    POINT currentCursor = cursor;
+    POINT currentCursor = Emu.cursor;
     int x0 = 0, xf = (80-1), dx = 0;
     wchar_t *line = NULL;
 
@@ -238,7 +238,7 @@ void csi_cls_screen_EL_K(const wchar_t *params,  HDC *memdc)
 
 void csi_insert_char_ICH(const wchar_t *params,  HDC *memdc)
 {
-  int xi = cursor.x;
+  int xi = Emu.cursor.x;
   int xf = (int)wcstol(params, NULL, 10);
   int dx = (xf - xi);
  
@@ -249,7 +249,7 @@ void csi_insert_char_ICH(const wchar_t *params,  HDC *memdc)
     }
     line[dx] = L'\0';
     wmemset(line, L' ', dx);
-    draw_font(memdc, (const wchar_t *)line, cursor.x, cursor.y);
+    draw_font(memdc, (const wchar_t *)line, Emu.cursor.x, Emu.cursor.y);
     // Liberar memoria
     free(line);
 }
@@ -272,7 +272,7 @@ void csi_cls_screen_ED_J(const wchar_t *params,  HDC *memdc)
       {
         n = (int)wcstol(token, NULL, 10);
       }
-    POINT currentCursor = cursor;
+    POINT currentCursor = Emu.cursor;
     int x0 = 0, y =(60-1), dx = 0;
     wchar_t *line = NULL;
     switch (n)
@@ -409,8 +409,8 @@ void csi_cursor_ctrl(const wchar_t *params, HDC *memdc)
 	  {
 	    if (timerCreated == 0)
 	      {
-		flag|=0x02;
-		int result = SetTimer(Wwindow, ID_TIMER_BLINK_CURSOR, 500, NULL);
+		Emu.flag|=0x02;
+		int result = SetTimer(GWindowPlatform.Window, ID_TIMER_BLINK_CURSOR, 500, NULL);
 		if (result == 0)
 		  {
 		    printf("No se pudo crear el temporizador\n");
@@ -431,7 +431,7 @@ void csi_cursor_ctrl(const wchar_t *params, HDC *memdc)
 	  {
 	    if(timerCreated == 1)
 	      {
-		flag&=~0x02;
+		Emu.flag&=~0x02;
 	      }
 	  }
       }
@@ -446,7 +446,7 @@ void csi_cursor_ctrl(const wchar_t *params, HDC *memdc)
 	     // muestra el cursor
 	    if(showCursor == 0)
 	      {
-		 flag|=0x01;
+		 Emu.flag|=0x01;
 		 showCursor=1;
 	      } 
 	  }
@@ -456,7 +456,7 @@ void csi_cursor_ctrl(const wchar_t *params, HDC *memdc)
 	    // oculta el cursor
 	    if(showCursor == 1)
 	      {
-		 flag&=~0x01;
+		 Emu.flag&=~0x01;
 		 showCursor=0;
 	      }
 	  }

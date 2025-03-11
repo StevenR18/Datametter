@@ -12,10 +12,6 @@ typedef struct
   List inputBuffer;
 }Termv; // Terminal virtual
 
-#define  saveCursor Emu.saveCursor
-#define  cursor     Emu.cursor
-#define  glifo      Emu.glifo
-#define  flag       Emu.flag
 #define  input      Emu.inputBuffer
 
 #define ON_CURSIVE(ex)((ex) |(0x01))
@@ -33,14 +29,11 @@ typedef struct
   unsigned int fUnderline;
   unsigned int fMode;
 }TextAtributes;
-extern TextAtributes TextAtri;
-
 List * getInput();
 wchar_t * getGlifo();
 void appendBuffer(const wchar_t *s, int len);
 void freeBuffer();
 void printBuffer();
 void write(HDC *memdc, int ofsetX);
-
 
 #endif

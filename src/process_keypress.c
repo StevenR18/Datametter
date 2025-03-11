@@ -2,7 +2,9 @@
 #include "..\..\Vt\includes\process_keypress.h"
 #include "..\..\Vt\includes\row.h"
 #include "..\..\Vt\includes\main_datametter.h"
-extern size_t lendDirectory;
+extern View vEmu;
+extern Win32Platform GWindowPlatform;
+#define OFSET_WIDTHINCHAR 2
 
 /*
   Procesamiento  se cuencias de escape csi
@@ -11,24 +13,24 @@ extern size_t lendDirectory;
 void delChar()
 {
   int ofx=0;
-  if(ROW_TYPE(arrRow,(vEmu.vCursor.y+vEmu.ofsetY))== ROW_MAIN) ofx=lenDirectory;
-  if((ROW_TYPE(arrRow,(vEmu.vCursor.y+vEmu.ofsetY))== ROW_MAIN)&&
-     (/*ROW_LEN(arrRow,(vEmu.vCursor.y+vEmu.ofsetY))*/
-      (vEmu.vCursor.x+vEmu.ofsetX+ofx)== lenDirectory))
+  if(ROW_TYPE(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop))== ROW_MAIN) ofx=vEmu.lenDirectory;
+  if((ROW_TYPE(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop))== ROW_MAIN)&&
+     (/*ROW_LEN(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop))*/
+      (vEmu.vCursor.x+vEmu.ofsetX+ofx)== vEmu.lenDirectory))
     {	    
     return;
     }
   
-  delCharOfRow(arrRow,(vEmu.vCursor.x+vEmu.ofsetX+ofx),(vEmu.vCursor.y+vEmu.ofsetY),&vEmu.capRow);
+  delCharOfRow(vEmu.arrRow,(vEmu.vCursor.x+vEmu.ofsetX+ofx),(vEmu.vCursor.y+vEmu.ofsetYTop),&vEmu.capacityRow);
   vEmu.vCursor.x--;
   if((vEmu.vCursor.x+vEmu.ofsetX+ofx) < 0)
     {
       vEmu.vCursor.y--;
-      vEmu.ofsetX= (vEmu.widthBuffer- vEmu.width);
-      if(ROW_TYPE(arrRow,(vEmu.vCursor.y+vEmu.ofsetY))== ROW_MAIN)
-	vEmu.vCursor.x=(vEmu.width-lenDirectory)-1;
+      vEmu.ofsetX= (vEmu.widthBufferInChar- vEmu.widthInChar);
+      if(ROW_TYPE(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop))== ROW_MAIN)
+	vEmu.vCursor.x=(vEmu.widthInChar-vEmu.lenDirectory)-1;
       else
-	vEmu.vCursor.x = (vEmu.width-1);
+	vEmu.vCursor.x = (vEmu.widthInChar-1);
     }
   else
     {
@@ -52,12 +54,84 @@ int isEscapeMoveCursor(wchar_t *str,int len)
 			     (str[2]==L'D')));
 }
 
-int isBlankSpace(int cursor_x,int cursor_y,ArrRow arr)
+/*;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  Nombre de la funcion: freeScrollUp()
+  Descripcion: 
+                    t0
+                 Emu.arrRow                     height=3
+		     |
+                     |               Si (ofsetYtop > 0) scrollup
+row ---------------------------------------                    
+ 1  x ...                                x                     
+    ---------------------------------------                    
+ 2  x ...                                x    (ofsetYTop =1)                    
+    ---------------------------------------                    
+ 3  x ...                                x                           
+    ---------------------------------------                    
+ 4  x ...                                x   (ofsetYbottom=4)              
+    ---------------------------------------                     
+ 5  x ...                                x               
+    ---------------------------------------                                             
+ 6  x...                                 x   
+    ---------------------------------------              
+ 7  x...                                 x   
+    ---------------------------------------        
+ 8  x..                                  x   
+    ---------------------------------------
+ 9  x..                                  x   
+    ---------------------------------------  
+ 10  x..                                  x  
+    ---------------------------------------
+*****************************************************************************************/
+void freeScrollUp(int *ofsetYTop,int *ofsetYbottom)
 {
-  return ((ROW_CHARAT(arr,cursor_y,cursor_x)== L' ')&&
-	  ((ROW_CHARAT(arr,cursor_y,cursor_x)) != L'\0'));
-  
+  /// si el ofset_y es distinto de cero  se puede hacer escroll
+  if(*ofsetYTop > 0 )
+    {
+      (*ofsetYTop)--;
+      (*ofsetYbottom)--;
+    }
 }
+
+/*;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  Nombre de la funcion: freeScrollUp()
+  Descripcion: 
+                    t0
+                 Emu.arrRow                     height=3
+		     |
+                     |               Si (ofsetYbottom !=capcityRow) scrollDown
+row ---------------------------------------                    
+ 1  x ...                                x                     
+    ---------------------------------------                    
+ 2  x ...                                x    (ofsetYTop =1)                    
+    ---------------------------------------                    
+ 3  x ...                                x                           
+    ---------------------------------------                    
+ 4  x ...                                x   (ofsetYbottom=4)              
+    ---------------------------------------                     
+ 5  x ...                                x               
+    ---------------------------------------                                             
+ 6  x...                                 x   
+    ---------------------------------------              
+ 7  x...                                 x   
+    ---------------------------------------        
+ 8  x..                                  x   
+    ---------------------------------------
+ 9  x..                                  x   
+    ---------------------------------------  
+ 10  x..                                  x  
+    ---------------------------------------
+*****************************************************************************************/
+void freeScrollDown(int *ofsetYTop, int *capacityRow,int *ofsetYbottom)
+{
+  if (*ofsetYbottom != *capacityRow)
+    {
+      (*ofsetYTop)++;
+      (*ofsetYbottom)++;
+    }
+}
+
+
 /*
   funciones para abanzar entre palabras  para abanzar entre palabras 
  */
@@ -70,7 +144,7 @@ void moveBetweenWordsLeft(POINT *Cursor,int *ofset_y,int *ofset_x,int Width,
   
   int lenD=0;
   int rowIndex = Cursor->y+*ofset_y;
-  if(ROW_TYPE(arr,(rowIndex))== ROW_MAIN) lenD= lenDirectory;
+  if(ROW_TYPE(arr,(rowIndex))== ROW_MAIN) lenD= vEmu.lenDirectory;
   int cx=Cursor->x;
   int cy=Cursor->y;
   if((cx + *ofset_x + lenD) == lenD)return;
@@ -121,7 +195,7 @@ void moveBetweenWordsRight(POINT *Cursor,int *ofset_y,int *ofset_x,int Width,
   
   int lenD=0;
   int rowIndex = Cursor->y+*ofset_y;
-  if(ROW_TYPE(arr,(rowIndex))== ROW_MAIN) lenD= lenDirectory;
+  if(ROW_TYPE(arr,(rowIndex))== ROW_MAIN) lenD= vEmu.lenDirectory;
   int cx=Cursor->x;
   int cy=Cursor->y;
   if((cx + *ofset_x + lenD) == ROW_LEN(arr,rowIndex))return;
@@ -191,29 +265,28 @@ void processSequences(wchar_t * str, int len)
 	{
 	case L'C':
 	  moveBetweenWordsRight(&vEmu.vCursor,
-				&vEmu.ofsetY,
+				&vEmu.ofsetYTop,
 				&vEmu.ofsetX,
-				vEmu.width,
-				vEmu.widthBuffer,
-				arrRow
+				vEmu.widthInChar,
+				vEmu.widthBufferInChar,
+				vEmu.arrRow
 				);
 	  break;
 	case L'D':
 	  moveBetweenWordsLeft(&vEmu.vCursor,
-				&vEmu.ofsetY,
+				&vEmu.ofsetYTop,
 				&vEmu.ofsetX,
-				vEmu.width,
-				vEmu.widthBuffer,
-				arrRow
+				vEmu.widthInChar,
+				vEmu.widthBufferInChar,
+				vEmu.arrRow
 				);
 	  break;
-	  // TODO: implementar esta deven hacer escoroll vertical arriba abajo
-	case L'A':break;
-	case L'B':break;
-	 
-	};
-      
-      
+	case L'A':
+	  freeScrollUp(&vEmu.ofsetYTop,&vEmu.ofsetYbottom);
+	  break;
+	case L'B':freeScrollDown(&vEmu.ofsetYTop, &vEmu.capacityRow,&vEmu.ofsetYbottom);
+	  break;
+	}
     }
 }
 /***************************************************************************************/
@@ -225,39 +298,43 @@ void processSequences(wchar_t * str, int len)
 
 void processNewLine()
 {
-#define onlyReturnifisCommandRow (isRowMain((vEmu.vCursor.y+vEmu.ofsetY)) && (getLastRowLen() == lenDirectory))
+#define onlyReturnifisCommandRow (isRowMain((vEmu.vCursor.y+vEmu.ofsetYTop)) && (getLastRowLen() == vEmu.lenDirectory))
   
   if(onlyReturnifisCommandRow)
     {
-      if(!(scrollDown(vEmu.height-1)))vEmu.vCursor.y++;
-      //else //vEmu.vCursor.y= vEmu.ofsetY;
-      appendRow(arrRow,(wchar_t *)vEmu.currentDirectory,
-		wcslen((wchar_t *)vEmu.currentDirectory),&vEmu.capRow);
-      //row[vEmu.vCursor.y+vEmu.ofsetY].rowType = ROW_MAIN;
-      ROW_TYPE(arrRow,vEmu.vCursor.y+vEmu.ofsetY)=ROW_MAIN;
-      //// crear una funcion para procesar los comandos de la terminal
+             //// crear una funcion para procesar los comandos de la terminal
+      
+      if(!(scrollDown(/*vEmu.heightInChar-1*/)))vEmu.vCursor.y++;
+      //else //vEmu.vCursor.y= vEmu.ofsetYTop;
+
+      appendRow(vEmu.arrRow,(wchar_t *)vEmu.currentDirectory,
+		wcslen((wchar_t *)vEmu.currentDirectory),&vEmu.capacityRow);
+      //row[vEmu.vCursor.y+vEmu.ofsetYTop].rowType = ROW_MAIN;
+      ROW_TYPE(vEmu.arrRow,vEmu.vCursor.y+vEmu.ofsetYTop)=ROW_MAIN;
+
     }
   else
     {
       wchar_t command[500];
       extractCommand(command);
       procesingCommands(command);
-      // TODO: CORREGIR ESTA PARTE
-      // luego de la ejecucion se reinicia la terminal
-      appendRow(arrRow,(wchar_t *)vEmu.currentDirectory,wcslen((wchar_t *)vEmu.currentDirectory),&vEmu.capRow);
+      
+      appendRow(vEmu.arrRow,(wchar_t *)vEmu.currentDirectory,wcslen((wchar_t *)vEmu.currentDirectory),&vEmu.capacityRow);
       vEmu.vCursor.x=0;
-      if(!scrollDown(vEmu.height))
+      if(!scrollDown(/*vEmu.heightInChar*/))
 	{
 	  // crear una funcion que devuelva la posicion y
 	  // de la ultima fila
-	  vEmu.vCursor.y=(vEmu.capRow-1);
+	  vEmu.vCursor.y=(vEmu.capacityRow-1);
 	}
       else
 	{
-	  vEmu.vCursor.y= vEmu.height -1;
+	  // el cursor y deve ubicarse en la ultima row
+	  int indexLastRow= ((vEmu.capacityRow-1)- vEmu.ofsetYTop); 
+	  vEmu.vCursor.y=indexLastRow;
 	}
-      //row[vEmu.vCursor.y+vEmu.ofsetY].rowType = ROW_MAIN;      
-      ROW_TYPE(arrRow,vEmu.vCursor.y+vEmu.ofsetY)=ROW_MAIN;
+      //row[vEmu.vCursor.y+vEmu.ofsetYTop].rowType = ROW_MAIN;      
+      ROW_TYPE(vEmu.arrRow,vEmu.vCursor.y+vEmu.ofsetYTop)=ROW_MAIN;
    }
 }
 /***************************************************************************************/
@@ -266,63 +343,169 @@ void processNewLine()
   procesamiento de caracteres imprimibles
 
  */
-void adjustCursor(int *capRowExceded)
+void adjustCursor(int *capRowExceded,int lastLen)
 {
   
-  int ox = (ROW_TYPE(arrRow,(vEmu.vCursor.y+vEmu.ofsetY)) == ROW_MAIN) ? lenDirectory : 0;
-  if((vEmu.vCursor.x+vEmu.ofsetX + ox) >= (vEmu.widthBuffer) || (*capRowExceded))
+  int ox = (ROW_TYPE(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop)) == ROW_MAIN) ? vEmu.lenDirectory : 0;
+  if((vEmu.vCursor.x+vEmu.ofsetX + ox) >= (vEmu.widthBufferInChar) || (*capRowExceded))
     {
-      if(!(scrollDown(vEmu.height)))
+      int sizeRest=0;
+      if(!(scrollDown(vEmu.heightInChar)))
 	{
+	  // revisar si la row anterior ha sobrepasado el ancho del buffer
+	  // si sobrebasa el ancho del buffer restar a su len loue sobre
+	  // reubicar el nuevo cero de terminacion para la row
+	  // el sobrante colocarlo en la fila siguiente
+
+	  /*
+                width=35                           el width es impar
+	  -----------------------------------  -----
+	  ^B^B^B^B^B^B^B^B^B^B^B^B^B^B^B^B^B^  B   ----> sobranete de 1 cuando ancho imp    
+	  -----------------------------------  -----
+	                                    x   X        x=34  X=36  size= 35-36= 1
+
+	  
+                width=36                           el width es impar
+	  ------------------------------------  ----
+	  ^B^B^B^B^B^B^B^B^B^B^B^B^B^B^B^B^B^B  ---> no hay sobrante
+	  ------------------------------------  ----   
+	                                    x   X        x=34  X=37 size= len-36 =0
+	  */	  
+	  wchar_t rest[10]={L'\0'};
+	  sizeRest=(vEmu.widthBufferInChar - ROW_LEN(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop))); 
+	  if(sizeRest < 0)
+	    {
+	      sizeRest*=-1;
+	      int prevLen= (*vEmu.arrRow)[vEmu.vCursor.y+vEmu.ofsetYTop].len;
+	      //si entra aqui el tamaño de la fila es mayor que el buffer
+	      wmemcpy(rest,
+		      &(*vEmu.arrRow)[vEmu.vCursor.y+vEmu.ofsetYTop].s[prevLen-1],
+		      sizeRest);
+
+	      NULL_TERMINATE(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop),(int)vEmu.widthBufferInChar);
+	      ROW_LEN(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop))-=sizeRest;
+	    } 
 	 vEmu.vCursor.y++;
 	 vEmu.ofsetX=0;
+	 vEmu.vCursor.x=0;
+	 if(sizeRest != 0)processChar(rest, sizeRest);
 	}
       else
 	{
-	  if((vEmu.vCursor.x +vEmu.ofsetX + ox) != vEmu.widthBuffer)
+	  if((vEmu.vCursor.x +vEmu.ofsetX + ox) != vEmu.widthBufferInChar)
 	    {
 	       if(vEmu.vCursor.y != 0)vEmu.vCursor.y--;
 	       vEmu.ofsetX=0;
 	    }
 	  else
 	    {
-	      vEmu.vCursor.y = vEmu.height-1;
+	      vEmu.vCursor.y = vEmu.heightInChar-1;
 	      vEmu.ofsetX=0;
 	    }
 	}
-      if(*capRowExceded != 1)vEmu.vCursor.x=0;
+      /// aqui tienes que arreglar
+      if(*capRowExceded != 1)
+	vEmu.vCursor.x=0;
+      if(sizeRest != 0)
+	vEmu.vCursor.x=1;
+	
       *capRowExceded=0;
     }
   else
     {
-      if((vEmu.vCursor.x+ ox) >= vEmu.width)
+      // se modifica el ofsetX
+      if((vEmu.vCursor.x+ ox) >= vEmu.widthInChar)
 	{
-	  if(vEmu.ofsetX < (vEmu.widthBuffer - vEmu.width))
+	  /*
+	   -----------------------------------------------------------------------------------------------------
+            Caso en que el ancho de la ventana es inpar
+	    WIDTH = 35
+	    ----------------------------------- ----------
+            ^B^B^B^B^B^B^B^B^B^B^B^B^B^B^B^B^B   X
+	    ----------------------------------- ----------
+                                              x  X                 x=34   X=36 =OF_2
+	     WIDTH = 35
+	    ----------------------------------- ----------
+            C^B^B^B^B^B^B^B^B^B^B^B^B^B^B^B^B   X
+	    ----------------------------------- ----------
+                                             x  X                 x=33   X=35 OF_1
+----------------------------------------------------------------------------------------------------------------
+	    Caso en el que el ancho de la ventana es par
+
+	    WIDTH = 34
+	    ---------------------------------- ----------
+            ^B^B^B^B^B^B^B^B^B^B^B^B^B^B^B^B   X
+	    ---------------------------------- ----------
+                                            x  X                 x=32   X=34 OF_1
+
+	    WIDTH = 34
+	    ---------------------------------- ----------
+            C^B^B^B^B^B^B^B^B^B^B^B^B^B^B^B^B   X
+	    ---------------------------------- ----------
+                                             x  X                 x=33   X=35 OF_2
+----------------------------------------------------------------------------------------------------------------
+
+	   */
+      
+	  if(vEmu.ofsetX < (vEmu.widthBufferInChar - vEmu.widthInChar))
 	    {
-	      vEmu.ofsetX++;
-	      vEmu.vCursor.x = (vEmu.width-1)- ox;
+	      if((int)vEmu.widthInChar % 2 == 0)
+		{
+		  if((vEmu.vCursor.x/*+vEmu.ofsetX */+ ox) % 2 == 0)
+		    {
+		      vEmu.ofsetX++;
+		      vEmu.vCursor.x = (vEmu.widthInChar-1)- ox;
+		    }
+		  else
+		    {
+		      vEmu.ofsetX+=2;
+		      vEmu.vCursor.x = (vEmu.widthInChar-1)- ox;
+		    }
+		}
+	      else
+		{
+		   if((vEmu.vCursor.x/*+vEmu.ofsetX */+ ox) % 2 == 0)
+		    {
+		       vEmu.ofsetX+=2;
+		      vEmu.vCursor.x = (vEmu.widthInChar-1)- ox;
+		      
+		    }
+		  else
+		    {
+		      vEmu.ofsetX++;
+		      vEmu.vCursor.x = (vEmu.widthInChar-1)- ox;
+		     
+		    }
+		  
+		} 
 	    }
 	}
     }
-
 }
 
 void processChar(wchar_t *str, int len)
 {
   int caprExeded=0;
-  appendCharsRow(arrRow,&str[0],(vEmu.vCursor.x+vEmu.ofsetX),
-		 (vEmu.vCursor.y+vEmu.ofsetY),vEmu.ofsetY,1,
+  appendCharsRow(vEmu.arrRow,&str[0],(vEmu.vCursor.x+vEmu.ofsetX),
+		 (vEmu.vCursor.y+vEmu.ofsetYTop),vEmu.ofsetYTop,len,
 		 &caprExeded,
-		 &vEmu.capRow,
-		 vEmu.widthBuffer,
-		 vEmu.height);
-  vEmu.vCursor.x++;
-  adjustCursor(&caprExeded);
+		 &vEmu.capacityRow,
+		 vEmu.widthBufferInChar,
+		 vEmu.heightInChar);
+  vEmu.vCursor.x+=len;
+  adjustCursor(&caprExeded,len);
+}
+
+
+void chageLayout(LAYOUT layout)
+{
+  vEmu.layoutType= layout;
+  RedrawWindow(GWindowPlatform.Window,NULL,NULL,RDW_INVALIDATE);
 }
 
 void  proceesKeyPress(List *inp)
 {
-  int capRowExceded=0;
+  //int capRowExceded=0;
   wchar_t * resto=NULL;
   for(int x=0; x<(BUTTON_COUNT -1);x++)
     {
@@ -339,6 +522,43 @@ void  proceesKeyPress(List *inp)
 	{
 	  // secencias de control de nueva linia
 	  processNewLine();
+	}
+      else if(str[0] == L'^')
+	{
+	  // combinaciones con control sin asignar
+	  if(iswalpha(str[1])) processChar(str,2);
+	}
+      else if(str[0]==L'*')
+	{
+	  // combinaciones con ctrl asignadas
+	  wchar_t letter= str[1];
+	  switch(letter)
+	    {
+	    case L'A':break;
+	    case L'C':break;
+	    case L'F':break;
+	    case L'H':break;
+	    case L'I':break;
+	    case L'J':break;
+	    case L'L':
+	      /// fucion para cambiar la distribucionde las ventanas
+	      #define MAX_LAYOUT 3
+	      static LAYOUT layouts[3]={LAYOUT_2,LAYOUT_3,LAYOUT_DEFECT};
+	      static int indexLayout=0;
+	      chageLayout(layouts[indexLayout]);
+	      indexLayout++;
+	      if(indexLayout == MAX_LAYOUT) indexLayout=0;
+	      
+	      break;
+	    case L'M':/*activar el cursor en modo libre*/
+	      break;
+	    case L'V':break;
+	    default:
+	      GWindowPlatform.Running=0;
+	      break;
+	      
+	    }
+	  
 	}
       else
 	{

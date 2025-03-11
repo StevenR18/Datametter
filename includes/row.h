@@ -7,6 +7,16 @@ typedef struct
   int len;
   int rowType;
 }Row;
+/*
+typedef struct
+{
+  Row * arrRow;        // puntero al inicio del array
+  int ofsetTop;        
+  int ofsetBottom;
+  int capcityRow;
+}BufferRow;
+*/
+
 // array de filas
 typedef Row ** ArrRow;
 // alias para  un puntero a Row
@@ -25,6 +35,9 @@ void appendRow(ArrRow arr, wchar_t * c, int len, int *capr);
 void deleteRow(ArrRow arr,int indexRow, int *capr);
 void freeRow(ArrRow arr, int *capr, int *ofset1, int *ofset2);
 int RowisEmpty(ArrRow arr,int indexRow);
+int isRowMain(int indexRow);
+// devuelve la longitud de la ultima fila que se ingreso
+int getLastRowLen();
 int findLastRowmain(ArrRow arr, int indexRow/*sumar el ofset_y*/);
 void appendCharToRow(ArrRow arr, wchar_t * c, int indexRow, int len);
 void reservMemoryRow(ArrRow arr,int indexRow,int len);

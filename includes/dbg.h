@@ -2,9 +2,9 @@
 #define DBG_H
 #include "..\..\Vt\includes\window64_platform.h"
 #include "..\..\Vt\includes\static_list.h"
-void drawGrid(Win32ScreenBuffer *b,int width,int height);
+void drawGrid(HDC *hdcTerm,int width,int height);
 
-void debugInputBuffer(Win32ScreenBuffer *b,
+void debugInputBuffer(HDC *hdcTerm,
 		      List *lisImp,
 		      int width,
 		      int height,

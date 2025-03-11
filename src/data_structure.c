@@ -126,17 +126,6 @@ void spliteEcapeAndWord(const wchar_t *s,
     *countOut = splIndex;
 }
 
-
-
-// el len que se le pasa a esta funcion no devería tomar en cuenta las secuencias de escape
-/*
-void freeSplBuffer(splitBuffer splBuffer, int c)
-{
-  for(int x=0; x < c; x++)
-    myfree(splBuffer[x]);
-}
-*/
-
 void appendBuffer(const wchar_t *s, int len)
 {
   List * lisString= getListOfString();
@@ -144,17 +133,7 @@ void appendBuffer(const wchar_t *s, int len)
   wchar_t spBuffer[MAX_ROW][MAX_CELL]={{L'\0'}};
   spliteEcapeAndWord(s, &c,spBuffer);
       for(int x=0; x < c; x++) appendNodoToList(lisString,spBuffer[x], wcslen(spBuffer[x]));
-    //appendNode(splBuffer[x], wcslen(splBuffer[x]));
-      /*
-  #if 1
-  freeSplBuffer(splBuffer, c);
-  myfree(splBuffer);
-  #else
-  freeSplBuffer(splBuffer, c);
-  free(splBuffer);
-  #endif
-  splBuffer=NULL;
-      */
+ 
 }
 
 

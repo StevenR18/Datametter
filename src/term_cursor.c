@@ -4,26 +4,26 @@ switch (key) {
     {
       // LEFT
       int ofx=0;
-      cursor_x--;
-      if(ROW_TYPE(arrRow,(cursor_y+ofset_y))== ROW_MAIN)ofx=lenDirectory;
-      if((cursor_x+ofx+ofset_x) < 0)
+      vEmu.vCursor.x--;
+      if(ROW_TYPE(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop))== ROW_MAIN)ofx=vEmu.lenDirectory;
+      if((vEmu.vCursor.x+ofx+vEmu.ofsetX) < 0)
 	{
-	  ofset_x =((wBuffer- width));
-	  if(ROW_TYPE(arrRow,((cursor_y-1)+ofset_y))== ROW_MAIN) ofx=lenDirectory;
-	  cursor_x= (width-ofx-1);
-	  cursor_y--;
+	  vEmu.ofsetX =((vEmu.widthBufferInChar- vEmu.widthInChar));
+	  if(ROW_TYPE(vEmu.arrRow,((vEmu.vCursor.y-1)+vEmu.ofsetYTop))== ROW_MAIN) ofx=vEmu.lenDirectory;
+	  vEmu.vCursor.x= (vEmu.widthInChar-ofx-1);
+	  vEmu.vCursor.y--;
 	  break;
 	}
 
-      if((cursor_x+ofx+ofset_x) < ofset_x)
+      if((vEmu.vCursor.x+ofx+vEmu.ofsetX) < vEmu.ofsetX)
 	{
-	  ofset_x--;
-	  cursor_x=0;
+	  vEmu.ofsetX--;
+	  vEmu.vCursor.x=0;
 	  break;
 	}
-      if((cursor_x+ofx+ofset_x) < (ofx) ) 
+      if((vEmu.vCursor.x+ofx+vEmu.ofsetX) < (ofx) ) 
 	{
-	  cursor_x++;
+	  vEmu.vCursor.x++;
 	  break;
 	}   
   }break;
@@ -33,26 +33,26 @@ switch (key) {
       //RIGH
       int ofx=0;
       // en primeras aumentamos el cursor
-      cursor_x++;
-      if(ROW_TYPE(arrRow,(cursor_y+ofset_y))== ROW_MAIN)ofx+=lenDirectory;
-      //revisa si el cursor_x+ofset_x sea menor que el len de la fila actual
-      if(!((ROW_LEN(arrRow,(cursor_y+ofset_y))+1) > (cursor_x+ofset_x+ofx)))
+      vEmu.vCursor.x++;
+      if(ROW_TYPE(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop))== ROW_MAIN)ofx+=vEmu.lenDirectory;
+      //revisa si el vEmu.vCursor.x+vEmu.ofsetX sea menor que el len de la fila actual
+      if(!((ROW_LEN(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop))+1) > (vEmu.vCursor.x+vEmu.ofsetX+ofx)))
 	{
 	  // aqui el cursor no se puede mover y sale
-	  cursor_x--;
+	  vEmu.vCursor.x--;
 	  break;
 	}
-      if(cursor_x+ofset_x+ofx > (width+ofset_x-1))
+      if(vEmu.vCursor.x+vEmu.ofsetX+ofx > (vEmu.widthInChar+vEmu.ofsetX-1))
 	{
-	  cursor_x--;
-	  ofset_x++;
+	  vEmu.vCursor.x--;
+	  vEmu.ofsetX++;
 	}
       
-      if((cursor_x+ofset_x+ofx)>(wBuffer-1))
+      if((vEmu.vCursor.x+vEmu.ofsetX+ofx)>(vEmu.widthBufferInChar-1))
 	{
-	  ofset_x=0;
-	  cursor_x=0;
-	  cursor_y++;
+	  vEmu.ofsetX=0;
+	  vEmu.vCursor.x=0;
+	  vEmu.vCursor.y++;
 	}
       
     } break;

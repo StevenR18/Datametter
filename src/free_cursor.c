@@ -3,56 +3,57 @@
 
  */
 
+
   switch (key) {
   case ARROW_LEFT(0x5E00):
     {
-      int ofx=(ROW_TYPE(arrRow,(cursor_y+ofset_y)) == ROW_MAIN) ? lenDirectory : 0;
-      if((cursor_x+ofx) != ofx )
+      int ofx=(ROW_TYPE(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop)) == ROW_MAIN) ? vEmu.lenDirectory : 0;
+      if((vEmu.vCursor.x+ofx) != ofx )
 	{
-	  cursor_x--;
+	  vEmu.vCursor.x--;
 	}
       else
 	{
-	  if(cursor_y != 0)
+	  if(vEmu.vCursor.y != 0)
 	    {
-	      cursor_y--;
+	      vEmu.vCursor.y--;
 	      scrollUp(); // se hace escroll hacia arriba
 	    }
 	  /// en que posicion queda la cordenada x
-	  ofx=(ROW_TYPE(arrRow,(cursor_y+ofset_y)) == ROW_MAIN) ? lenDirectory : 0;
-	  cursor_x= ROW_LEN(arrRow,(cursor_y+ofset_y))-ofx;
+	  ofx=(ROW_TYPE(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop)) == ROW_MAIN) ? vEmu.lenDirectory : 0;
+	  vEmu.vCursor.x= ROW_LEN(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop))-ofx;
 	}
   }break;
   case ARROW_RIGHT(0x5E00):
     {
-      if(cursor_x < width)cursor_x++; // modoel<
+      if(vEmu.vCursor.x < vEmu.widthInChar)vEmu.vCursor.x++; // modoel<
       //comand>as
-      int  ofx = (ROW_TYPE(arrRow,(cursor_y+ofset_y)) == ROW_MAIN) ? lenDirectory : 0;
-       if((cursor_x+ofx) != (ROW_LEN(arrRow,(cursor_y+ofset_y))))
+      int  ofx = (ROW_TYPE(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop)) == ROW_MAIN) ? vEmu.lenDirectory : 0;
+       if((vEmu.vCursor.x+ofx) != (ROW_LEN(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop))))
 	{
-	  cursor_x++;
+	  vEmu.vCursor.x++;
 	}
     } break;
   case ARROW_UP(0x5E00):
     {
-      if((cursor_y) != 0)
+      if((vEmu.vCursor.y) != 0)
       {
-	 cursor_y--;
+	 vEmu.vCursor.y--;
 	 scrollUp();	
       }
-      int ofx=ofx = (ROW_TYPE(arrRow,(cursor_y+ofset_y)) == ROW_MAIN) ? lenDirectory : 0;
-      cursor_x= ROW_LEN(arrRow,(cursor_y+ofset_y))-ofx;   
+      int ofx=ofx = (ROW_TYPE(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop)) == ROW_MAIN) ? vEmu.lenDirectory : 0;
+      vEmu.vCursor.x= ROW_LEN(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop))-ofx;   
     }break;
     case ARROW_DOWN(0x5E00):
       {
-	if((cursor_y) < (height-1)&&
-	   ((cursor_y))< (caprow-1))
+	if((vEmu.vCursor.y) < (vEmu.heightInChar-1)&&
+	   ((vEmu.vCursor.y))< (vEmu.capacityRow-1))
 	{
-	  cursor_y++;
-	  if(ROW_TYPE(arrRow,(cursor_y+ofset_y)) == ROW_MAIN)
-	    cursor_x=ROW_LEN(arrRow,(cursor_y+ofset_y)) - lenDirectory;
+	  vEmu.vCursor.y++;
+	  if(ROW_TYPE(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop)) == ROW_MAIN)
+	    vEmu.vCursor.x=ROW_LEN(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop)) - vEmu.lenDirectory;
 	  else
-	    cursor_x=ROW_LEN(arrRow,(cursor_y+ofset_y));
+	    vEmu.vCursor.x=ROW_LEN(vEmu.arrRow,(vEmu.vCursor.y+vEmu.ofsetYTop));
 	}
       else
 	{

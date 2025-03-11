@@ -4,9 +4,8 @@ implementar las sigueente de escape al emulador
 \x1b[B      # Mueve el cursor una línea hacia abajo
 \x1b[C      # Mueve el cursor una posición a la derecha
 \x1b[D      # Mueve el cursor una posición a la izquierda
-//Esta secuencias es la que se ba realizar
-\x1b[1;5C   # Ctrl + Flecha Derecha: Mueve el cursor una palabra a la derecha
 
+\x1b[1;5C   # Ctrl + Flecha Derecha: Mueve el cursor una palabra a la derecha
 \x1b[1;5D   # Ctrl + Flecha Izquierda: Mueve el cursor una palabra a la izquierda
 \x1b[1;5A   # Ctrl + Flecha Arriba: Desplaza el viewport una línea hacia arriba
 \x1b[1;5B   # Ctrl + Flecha Abajo: Desplaza el viewport una línea hacia abajo
