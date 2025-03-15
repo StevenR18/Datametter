@@ -11,7 +11,7 @@ typedef struct  Nodo
 
 typedef struct List
 {
-  Nodo *head;
+  Nodo * head;
   int count;
 }List;
 

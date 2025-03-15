@@ -30,6 +30,12 @@ typedef struct
   int Height;
 }Win32WindowDimension;
 
+int Window32GetRunning();
+double Window32GetAvarageFps();
+double Window32GetAvarageTimePerFrame();
+void Window32SetRunning(int value);
+HWND Window32GetWindow();
+
 #endif
 
 

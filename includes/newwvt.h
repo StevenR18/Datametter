@@ -12,7 +12,7 @@ typedef struct
   List inputBuffer;
 }Termv; // Terminal virtual
 
-#define  input      Emu.inputBuffer
+//#define  input      Emu.inputBuffer
 
 #define ON_CURSIVE(ex)((ex) |(0x01))
 #define OF_CURSIVE(ex)((ex)&(~0x01))
@@ -31,6 +31,7 @@ typedef struct
 }TextAtributes;
 List * getInput();
 wchar_t * getGlifo();
+void inicInputBuffer(int size);
 void appendBuffer(const wchar_t *s, int len);
 void freeBuffer();
 void printBuffer();

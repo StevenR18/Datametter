@@ -2,7 +2,7 @@
 #define PROCESS_KEYPRESS_H
 #include <wchar.h>
 #include "..\..\Vt\includes\static_list.h"
-#include "..\..\Vt\includes\main_datametter.h"
+#include "..\..\Vt\includes\consol.h"
 
 extern size_t lenDirectory;
 extern ArrRow arrRow;

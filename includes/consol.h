@@ -1,5 +1,6 @@
-#ifndef MAIN_DATAMETTER_H
-#define MAIN_DATAMETTER_H
+
+#ifndef CONSOL_H
+#define CONSOL_H
 #include "..\..\Vt\includes\window64_platform.h"
 #include "..\..\Vt\includes\keyboard.h"
 #include "..\..\Vt\includes\static_list.h"
@@ -22,12 +23,14 @@ typedef struct
 {
   HDC   hdcTerm;       // contexto propio de dibujo para la terminal
   HBITMAP hBitmapTerm; // bitmap propio de la terminal
+  HBITMAP holdBitmap;  // bitmpa anterior
   POINT vCursor;
   POINT positionTerm; // para posicionar la terminal
   CURSOR_TYPE  cursorType; // modo del  curor
   LAYOUT layoutType;
   List buffercomand;
   List renderBuffer;
+  List *Input;
   int  widthInChar;
   int  heightInChar;
   int  widthBufferInChar;
@@ -46,9 +49,11 @@ typedef struct
   Entity Mario;
 }View;
 List * getListOfString();
-void main_app(Win32ScreenBuffer *Buffer, KeyboardEvent * k);
-void inic_app(Win32WindowDimension Dim);
-void end_app();
-void updateDim(int w, int h, HDC *backBuffer);
+void simulate_term(Win32ScreenBuffer *Buffer, KeyboardEvent * k);
+void inic_term(Win32WindowDimension Dim);
+void end_simulate();
+void updateDimBitmap(int w, int h, HDC *backBuffer);
+void modSerialTermiminal();
+void exitModSerialTerminal();
 
 #endif
