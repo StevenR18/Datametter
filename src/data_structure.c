@@ -1,6 +1,6 @@
 
 #include "..\..\Vt\includes\static_list.h"
-#include "..\..\Vt\includes\main_datametter.h"
+#include "..\..\Vt\includes\consol.h"
 
 
 int lenEscape(const wchar_t *s)

@@ -410,7 +410,8 @@ void csi_cursor_ctrl(const wchar_t *params, HDC *memdc)
 	    if (timerCreated == 0)
 	      {
 		Emu.flag|=0x02;
-		int result = SetTimer(GWindowPlatform.Window, ID_TIMER_BLINK_CURSOR, 500, NULL);
+		HWND window= Window32GetWindow();
+		int result = SetTimer(window, ID_TIMER_BLINK_CURSOR, 500, NULL);
 		if (result == 0)
 		  {
 		    printf("No se pudo crear el temporizador\n");

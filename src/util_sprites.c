@@ -19,21 +19,7 @@ HBITMAP loadBmp(const char *path)
     }
   return bmp;
 }
-/*
-void drawSprite(HBITMAP sprite, HDC *hdc, POINT pos)
-{
-  HDC memdc;
-  memdc = CreateCompatibleDC(*hdc);
-  SelectObject(memdc,sprite);
-  // Color transparente (por ejemplo, blanco puro)
-  COLORREF transparentColor = RGB(166, 202, 240);
-  //BitBlt(*hdc, pos.x, pos.y, 16, 16, memdc, 0, 0, SRCCOPY);
-  TransparentBlt(*hdc, pos.x,pos.y, 16*2, 16*2, memdc, 0, 0, 16, 16, transparentColor);
 
-  DeleteDC(memdc);
-}
-
-*/
 
 void drawSprite(Entity *e, HDC *hdc)
 {

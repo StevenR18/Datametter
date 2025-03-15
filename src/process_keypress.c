@@ -1,14 +1,18 @@
 
 #include "..\..\Vt\includes\process_keypress.h"
 #include "..\..\Vt\includes\row.h"
-#include "..\..\Vt\includes\main_datametter.h"
+#include "..\..\Vt\includes\consol.h"
+#include "..\..\Vt\includes\serial.h"
 extern View vEmu;
 extern Win32Platform GWindowPlatform;
+extern int GRunnigSerial;
 #define OFSET_WIDTHINCHAR 2
+
 
 /*
   Procesamiento  se cuencias de escape csi
  */
+
 
 void delChar()
 {
@@ -301,17 +305,13 @@ void processNewLine()
 #define onlyReturnifisCommandRow (isRowMain((vEmu.vCursor.y+vEmu.ofsetYTop)) && (getLastRowLen() == vEmu.lenDirectory))
   
   if(onlyReturnifisCommandRow)
-    {
-             //// crear una funcion para procesar los comandos de la terminal
-      
-      if(!(scrollDown(/*vEmu.heightInChar-1*/)))vEmu.vCursor.y++;
-      //else //vEmu.vCursor.y= vEmu.ofsetYTop;
-
+    {    
+      if(!(scrollDown()))
+	vEmu.vCursor.y++;
       appendRow(vEmu.arrRow,(wchar_t *)vEmu.currentDirectory,
 		wcslen((wchar_t *)vEmu.currentDirectory),&vEmu.capacityRow);
-      //row[vEmu.vCursor.y+vEmu.ofsetYTop].rowType = ROW_MAIN;
       ROW_TYPE(vEmu.arrRow,vEmu.vCursor.y+vEmu.ofsetYTop)=ROW_MAIN;
-
+      
     }
   else
     {
@@ -321,19 +321,16 @@ void processNewLine()
       
       appendRow(vEmu.arrRow,(wchar_t *)vEmu.currentDirectory,wcslen((wchar_t *)vEmu.currentDirectory),&vEmu.capacityRow);
       vEmu.vCursor.x=0;
-      if(!scrollDown(/*vEmu.heightInChar*/))
+      if(!scrollDown())
 	{
-	  // crear una funcion que devuelva la posicion y
-	  // de la ultima fila
 	  vEmu.vCursor.y=(vEmu.capacityRow-1);
 	}
       else
 	{
-	  // el cursor y deve ubicarse en la ultima row
 	  int indexLastRow= ((vEmu.capacityRow-1)- vEmu.ofsetYTop); 
 	  vEmu.vCursor.y=indexLastRow;
 	}
-      //row[vEmu.vCursor.y+vEmu.ofsetYTop].rowType = ROW_MAIN;      
+     
       ROW_TYPE(vEmu.arrRow,vEmu.vCursor.y+vEmu.ofsetYTop)=ROW_MAIN;
    }
 }
@@ -350,7 +347,7 @@ void adjustCursor(int *capRowExceded,int lastLen)
   if((vEmu.vCursor.x+vEmu.ofsetX + ox) >= (vEmu.widthBufferInChar) || (*capRowExceded))
     {
       int sizeRest=0;
-      if(!(scrollDown(vEmu.heightInChar)))
+      if(!(scrollDown()))
 	{
 	  // revisar si la row anterior ha sobrepasado el ancho del buffer
 	  // si sobrebasa el ancho del buffer restar a su len loue sobre
@@ -388,7 +385,15 @@ void adjustCursor(int *capRowExceded,int lastLen)
 	 vEmu.vCursor.y++;
 	 vEmu.ofsetX=0;
 	 vEmu.vCursor.x=0;
-	 if(sizeRest != 0)processChar(rest, sizeRest);
+	 if((sizeRest == 0) && ((vEmu.vCursor.y+vEmu.ofsetYTop) > (vEmu.capacityRow-1)))
+	   {
+	     appendRow(vEmu.arrRow,L"",0,&vEmu.capacityRow);
+	   }
+	 else
+	   {
+	      processChar(rest, sizeRest);
+    
+	   }	  
 	}
       else
 	{
@@ -502,6 +507,35 @@ void chageLayout(LAYOUT layout)
   vEmu.layoutType= layout;
   RedrawWindow(GWindowPlatform.Window,NULL,NULL,RDW_INVALIDATE);
 }
+typedef struct
+{
+  char  port[50];
+  int baudRate;
+  int dataBit;
+  int stopBit;
+  int parity;
+  int flowControl;
+}SETTING_PORT;
+
+DWORD WINAPI serialMonitor(LPVOID param)
+{
+  ///TODO:CAMBIAR EL ASPECTO DE LA TERMINAL EN MODO MONITOR SERIAL
+  OutputDebugStringA("Dentro del hilo del monitor serial\n");
+  SETTING_PORT * pSetting = (SETTING_PORT *)param;
+  
+  HANDLE hSerial = openPortCOM(pSetting->port,
+			      pSetting->baudRate,
+			      pSetting->dataBit,
+			      pSetting->stopBit,
+			      pSetting->parity,
+			      pSetting->flowControl);
+  
+  readPortCOM(&hSerial,sizeof(wchar_t));
+  exitModSerialTerminal(); // salir del modo serial
+  GRunnigSerial = 1;
+  CloseHandle(hSerial);
+  return 0;
+}
 
 void  proceesKeyPress(List *inp)
 {
@@ -534,9 +568,62 @@ void  proceesKeyPress(List *inp)
 	  wchar_t letter= str[1];
 	  switch(letter)
 	    {
-	    case L'A':break;
-	    case L'C':break;
-	    case L'F':break;
+	    case L'A':
+	      {
+	      /*
+		modo terminal serial
+		esta funcion se deve ejecutar mediante un hilo para que no bloquee
+		el  hilo principla de la aplicacion
+	       */
+		modSerialTermiminal();
+		static SETTING_PORT setting={0};
+		char *comFive="\\\\.\\COM5";
+		sprintf(setting.port,"%s",comFive);
+	        setting.baudRate     =  CBR_115200;
+	        setting.dataBit      =  8;
+	        setting.stopBit      =  ONESTOPBIT;
+	        setting.parity       =  NOPARITY;
+	        setting.flowControl  =  0;
+
+	      /*
+		creacion del  hilo de lectura
+		
+	       */
+	      DWORD threadId;
+	      HANDLE hThread = CreateThread(NULL,
+					    0,
+					    serialMonitor,
+					    (LPVOID)&setting,
+					    0,
+					    &threadId);
+
+	      // cuando el hilo termina cerramos el manejador de hilo
+	      // tambien dejamos la variable global en su estado por defecto 1
+	      if(hThread == NULL)
+		{
+		  OutputDebugStringA("Se creo correctamente el hilo");
+		  
+		}
+
+	       if(GRunnigSerial != 1)
+		 {
+		   CloseHandle(hThread);
+		   
+		 }
+	       
+	      // serialMonitor(port,baudRate,dataBit,stopBit,parity,flowControl);
+	      
+	      }break;
+	    case L'C':
+	      {
+		/// revisar por que no  funciona esta CTRL+C
+		
+		
+	      }break;
+	    case L'F':
+	      {
+		GRunnigSerial = 0;
+	      }break;
 	    case L'H':break;
 	    case L'I':break;
 	    case L'J':break;
@@ -548,7 +635,6 @@ void  proceesKeyPress(List *inp)
 	      chageLayout(layouts[indexLayout]);
 	      indexLayout++;
 	      if(indexLayout == MAX_LAYOUT) indexLayout=0;
-	      
 	      break;
 	    case L'M':/*activar el cursor en modo libre*/
 	      break;
